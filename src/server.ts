@@ -12,8 +12,8 @@ import { logger } from "./logger.js";
 import { registerReadTools, registerWriteTools } from "./tools.js";
 import { registerResources } from "./resources.js";
 
-const SERVER_NAME = "@xpecification/mcp";
-const SERVER_VERSION = "0.1.0";
+const SERVER_NAME = "@nextfreelatech/xpecification-mcp";
+const SERVER_VERSION = "1.0.1";
 
 export interface BuildServerOptions {
   config: ResolvedConfig;

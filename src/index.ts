@@ -1,5 +1,5 @@
-// Public entry for the @xpecification/mcp package. Most users invoke the
-// CLI via `npx -y @xpecification/mcp`; this module exists so library
+// Public entry for the @nextfreelatech/xpecification-mcp package. Most users invoke the
+// CLI via `npx -y @nextfreelatech/xpecification-mcp`; this module exists so library
 // consumers (e.g. an integration test or an embedded MCP gateway) can
 // build the same server programmatically.
 
