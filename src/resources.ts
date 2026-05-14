@@ -13,13 +13,13 @@
 
 import { ResourceTemplate, type McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-import type { XpecificationClient } from "./client.js";
+import type { XpecClient } from "./client.js";
 import type { ResolvedConfig } from "./config.js";
 import { McpToolError } from "./errors.js";
 import { logger } from "./logger.js";
 
 interface ResourceDeps {
-  client: XpecificationClient;
+  client: XpecClient;
   config: ResolvedConfig;
 }
 
@@ -53,7 +53,7 @@ export function registerResources(
 
 function registerProductResources(
   server: McpServer,
-  client: XpecificationClient,
+  client: XpecClient,
   productId: string,
 ): void {
   const wsId = productId;
@@ -151,7 +151,7 @@ function registerProductResources(
 
 function registerWorkspaceResources(
   server: McpServer,
-  client: XpecificationClient,
+  client: XpecClient,
   workspaceId: string,
 ): void {
   const collectionUri = `xpec://workspace/${workspaceId}`;

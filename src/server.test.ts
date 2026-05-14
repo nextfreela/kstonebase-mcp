@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { XpecificationClient } from "./client.js";
+import { XpecClient } from "./client.js";
 import type { ResolvedConfig } from "./config.js";
 import { detectLegacyBinding, waitForTransportClose } from "./server.js";
 
@@ -58,8 +58,8 @@ describe("detectLegacyBinding", () => {
     };
   }
 
-  function clientWithFetch(fetcher: typeof fetch): XpecificationClient {
-    return new XpecificationClient({
+  function clientWithFetch(fetcher: typeof fetch): XpecClient {
+    return new XpecClient({
       apiUrl: "https://api.example",
       token: "xpec_pat_x",
       fetcher,

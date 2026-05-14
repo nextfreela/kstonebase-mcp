@@ -1,8 +1,8 @@
-# Xpecification MCP — Specs as the Source of Truth for AI Coding Agents
+# Xpec MCP — Specs as the Source of Truth for AI Coding Agents
 
-Xpecification is the home for product, feature, and architectural specs. The Xpecification MCP server gives local AI coding agents (Claude Code, Cursor, VS Code, Zed, Windsurf, …) **read and write access to those specs**, so agents can plan, implement, and update features against the spec — not against stale `docs/`, hallucinated APIs, or whatever the model remembers from training.
+Xpec is the home for product, feature, and architectural specs. The Xpec MCP server gives local AI coding agents (Claude Code, Cursor, VS Code, Zed, Windsurf, …) **read and write access to those specs**, so agents can plan, implement, and update features against the spec — not against stale `docs/`, hallucinated APIs, or whatever the model remembers from training.
 
-## ❌ Without Xpecification MCP
+## ❌ Without Xpec MCP
 
 Coding agents drift from your product's actual contracts. You get:
 
@@ -11,7 +11,7 @@ Coding agents drift from your product's actual contracts. You get:
 - ❌ Duplicate "RFC-2025-…" markdown files in the repo, none authoritative
 - ❌ Specs updated only after the code lands, when nobody can challenge them
 
-## ✅ With Xpecification MCP
+## ✅ With Xpec MCP
 
 The agent reads the **current** spec before writing code, and proposes spec changes through the same workflow a human reviewer approves.
 
@@ -26,16 +26,16 @@ What ADRs apply to background jobs in this product? Read them, then
 critique my proposed worker change against them.
 ```
 
-The agent calls `read_specification`, `list_open_questions`, `start_new_version`, `update_specification_section`, `request_review` — and you stay in control: **a human still marks the draft Reviewed in the Xpecification UI**.
+The agent calls `read_specification`, `list_open_questions`, `start_new_version`, `update_specification_section`, `request_review` — and you stay in control: **a human still marks the draft Reviewed in the Xpec UI**.
 
 ## 📚 Concepts
 
 - **Workspace** — top-level container. Contains member Products plus its own Workspace-scoped specs (e.g., cross-product ADRs).
 - **Product** — a single product or service. Holds the feature, UX, and architecture specs that govern its codebase.
 - **Specification** — Markdown document with status (`Draft` → `Needs Review` → `Reviewed`), open questions, and a version history.
-- **Binding** — a `.xpecification.json` at the repo root binds the local checkout to a Workspace and/or Product, so agents don't have to pass ids on every call.
+- **Binding** — a `.xpec.json` at the repo root binds the local checkout to a Workspace and/or Product, so agents don't have to pass ids on every call.
 
-See `app.xpecification.com` for the dashboard and to mint a token.
+See `xpec.app` for the dashboard and to mint a token.
 
 ## 🛠️ Installation
 
@@ -43,8 +43,8 @@ See `app.xpecification.com` for the dashboard and to mint a token.
 
 - **Node.js ≥ 20.11**
 - An MCP-compatible client (Claude Code, Cursor, VS Code, Windsurf, Zed, Claude Desktop, …)
-- An **Xpecification Personal Access Token** — generate one at `https://app.xpecification.com/settings/developer`
-- A repo with a `.xpecification.json` file (or `XPECIFICATION_WORKSPACE_ID` / `XPECIFICATION_PRODUCT_ID` env vars). See [Binding the workspace](#binding-the-workspace) below.
+- An **Xpec Personal Access Token** — generate one at `https://xpec.app/settings/developer`
+- A repo with a `.xpec.json` file (or `XPEC_WORKSPACE_ID` / `XPEC_PRODUCT_ID` env vars). See [Binding the workspace](#binding-the-workspace) below.
 
 ### **Install in Claude Code**
 
@@ -52,8 +52,8 @@ Run this command. See the [Claude Code MCP docs](https://docs.anthropic.com/en/d
 
 ```bash
 claude mcp add --scope user \
-  -e XPECIFICATION_API_TOKEN=YOUR_TOKEN \
-  xpecification -- npx -y @nextfreelatech/xpecification-mcp
+  -e XPEC_API_TOKEN=YOUR_TOKEN \
+  xpec -- npx -y @nextfreelatech/xpec-mcp
 ```
 
 Drop `--scope user` to install only for the current project.
@@ -67,11 +67,11 @@ Add this to `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project). See t
 ```json
 {
   "mcpServers": {
-    "xpecification": {
+    "xpec": {
       "command": "npx",
-      "args": ["-y", "@nextfreelatech/xpecification-mcp"],
+      "args": ["-y", "@nextfreelatech/xpec-mcp"],
       "env": {
-        "XPECIFICATION_API_TOKEN": "YOUR_TOKEN"
+        "XPEC_API_TOKEN": "YOUR_TOKEN"
       }
     }
   }
@@ -85,12 +85,12 @@ See the [VS Code MCP docs](https://code.visualstudio.com/docs/copilot/chat/mcp-s
 ```json
 "mcp": {
   "servers": {
-    "xpecification": {
+    "xpec": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@nextfreelatech/xpecification-mcp"],
+      "args": ["-y", "@nextfreelatech/xpec-mcp"],
       "env": {
-        "XPECIFICATION_API_TOKEN": "YOUR_TOKEN"
+        "XPEC_API_TOKEN": "YOUR_TOKEN"
       }
     }
   }
@@ -104,11 +104,11 @@ Add this to your Windsurf MCP config. See the [Windsurf MCP docs](https://docs.w
 ```json
 {
   "mcpServers": {
-    "xpecification": {
+    "xpec": {
       "command": "npx",
-      "args": ["-y", "@nextfreelatech/xpecification-mcp"],
+      "args": ["-y", "@nextfreelatech/xpec-mcp"],
       "env": {
-        "XPECIFICATION_API_TOKEN": "YOUR_TOKEN"
+        "XPEC_API_TOKEN": "YOUR_TOKEN"
       }
     }
   }
@@ -122,12 +122,12 @@ Add this to your Zed `settings.json`. See the [Zed Context Server docs](https://
 ```json
 {
   "context_servers": {
-    "Xpecification": {
+    "Xpec": {
       "source": "custom",
       "command": "npx",
-      "args": ["-y", "@nextfreelatech/xpecification-mcp"],
+      "args": ["-y", "@nextfreelatech/xpec-mcp"],
       "env": {
-        "XPECIFICATION_API_TOKEN": "YOUR_TOKEN"
+        "XPEC_API_TOKEN": "YOUR_TOKEN"
       }
     }
   }
@@ -141,11 +141,11 @@ Edit your `claude_desktop_config.json`. See the [Claude Desktop MCP docs](https:
 ```json
 {
   "mcpServers": {
-    "xpecification": {
+    "xpec": {
       "command": "npx",
-      "args": ["-y", "@nextfreelatech/xpecification-mcp"],
+      "args": ["-y", "@nextfreelatech/xpec-mcp"],
       "env": {
-        "XPECIFICATION_API_TOKEN": "YOUR_TOKEN"
+        "XPEC_API_TOKEN": "YOUR_TOKEN"
       }
     }
   }
@@ -159,10 +159,10 @@ See the [OpenAI Codex repo](https://github.com/openai/codex) for more on the MCP
 #### Codex Local Server Connection (stdio)
 
 ```toml
-[mcp_servers.xpecification]
+[mcp_servers.xpec]
 command = "npx"
-args = ["-y", "@nextfreelatech/xpecification-mcp"]
-env = { XPECIFICATION_API_TOKEN = "YOUR_TOKEN" }
+args = ["-y", "@nextfreelatech/xpec-mcp"]
+env = { XPEC_API_TOKEN = "YOUR_TOKEN" }
 startup_timeout_ms = 20_000
 ```
 
@@ -171,7 +171,7 @@ startup_timeout_ms = 20_000
 First, run the server (see [Running over HTTP](#running-over-http-hosted-agents)). Then point Codex at it:
 
 ```toml
-[mcp_servers.xpecification]
+[mcp_servers.xpec]
 url = "http://127.0.0.1:3030/mcp"
 http_headers = { "Authorization" = "Bearer YOUR_TOKEN" }
 ```
@@ -182,11 +182,11 @@ http_headers = { "Authorization" = "Bearer YOUR_TOKEN" }
 > - **Windows** quick fix (absolute `npx` path + explicit env):
 >
 >   ```toml
->   [mcp_servers.xpecification]
+>   [mcp_servers.xpec]
 >   command = "C:\\Users\\yourname\\AppData\\Roaming\\npm\\npx.cmd"
->   args = ["-y", "@nextfreelatech/xpecification-mcp"]
+>   args = ["-y", "@nextfreelatech/xpec-mcp"]
 >   env = {
->     XPECIFICATION_API_TOKEN = "YOUR_TOKEN",
+>     XPEC_API_TOKEN = "YOUR_TOKEN",
 >     SystemRoot = "C:\\Windows",
 >     APPDATA = "C:\\Users\\yourname\\AppData\\Roaming"
 >   }
@@ -196,13 +196,13 @@ http_headers = { "Authorization" = "Bearer YOUR_TOKEN" }
 > - **macOS** quick fix (call Node directly with the installed package's entry point):
 >
 >   ```toml
->   [mcp_servers.xpecification]
+>   [mcp_servers.xpec]
 >   command = "/Users/yourname/.nvm/versions/node/v22.14.0/bin/node"
 >   args = [
->     "/Users/yourname/.nvm/versions/node/v22.14.0/lib/node_modules/@nextfreelatech/xpecification-mcp/dist/cli.js",
+>     "/Users/yourname/.nvm/versions/node/v22.14.0/lib/node_modules/@nextfreelatech/xpec-mcp/dist/cli.js",
 >     "--stdio"
 >   ]
->   env = { XPECIFICATION_API_TOKEN = "YOUR_TOKEN" }
+>   env = { XPEC_API_TOKEN = "YOUR_TOKEN" }
 >   ```
 >
 > Replace `yourname` with your OS username. On Windows, setting `APPDATA` and `SystemRoot` is essential because `npx` requires them but some Codex builds don't pass them through.
@@ -216,10 +216,10 @@ Any client that launches an MCP server via `command + args` can swap `npx` for a
 ```json
 {
   "mcpServers": {
-    "xpecification": {
+    "xpec": {
       "command": "bunx",
-      "args": ["-y", "@nextfreelatech/xpecification-mcp"],
-      "env": { "XPECIFICATION_API_TOKEN": "YOUR_TOKEN" }
+      "args": ["-y", "@nextfreelatech/xpec-mcp"],
+      "env": { "XPEC_API_TOKEN": "YOUR_TOKEN" }
     }
   }
 }
@@ -230,16 +230,16 @@ Any client that launches an MCP server via `command + args` can swap `npx` for a
 ```json
 {
   "mcpServers": {
-    "xpecification": {
+    "xpec": {
       "command": "deno",
       "args": [
         "run",
         "--allow-env",
         "--allow-net",
         "--allow-read",
-        "npm:@nextfreelatech/xpecification-mcp"
+        "npm:@nextfreelatech/xpec-mcp"
       ],
-      "env": { "XPECIFICATION_API_TOKEN": "YOUR_TOKEN" }
+      "env": { "XPEC_API_TOKEN": "YOUR_TOKEN" }
     }
   }
 }
@@ -252,10 +252,10 @@ Any client that launches an MCP server via `command + args` can swap `npx` for a
 ```json
 {
   "mcpServers": {
-    "xpecification": {
+    "xpec": {
       "command": "cmd",
-      "args": ["/c", "npx", "-y", "@nextfreelatech/xpecification-mcp"],
-      "env": { "XPECIFICATION_API_TOKEN": "YOUR_TOKEN" }
+      "args": ["/c", "npx", "-y", "@nextfreelatech/xpec-mcp"],
+      "env": { "XPEC_API_TOKEN": "YOUR_TOKEN" }
     }
   }
 }
@@ -266,8 +266,8 @@ Any client that launches an MCP server via `command + args` can swap `npx` for a
 For agents that consume MCP over HTTP/SSE rather than stdio, run the server explicitly:
 
 ```bash
-XPECIFICATION_API_TOKEN=YOUR_TOKEN \
-  npx -y @nextfreelatech/xpecification-mcp --http --port 3030 --cors-origin https://your-agent.example.com
+XPEC_API_TOKEN=YOUR_TOKEN \
+  npx -y @nextfreelatech/xpec-mcp --http --port 3030 --cors-origin https://your-agent.example.com
 ```
 
 Then point your hosted agent at `http://<host>:3030/mcp`.
@@ -276,7 +276,7 @@ Then point your hosted agent at `http://<host>:3030/mcp`.
 
 The MCP server is **bound** to a Workspace and/or a Product so tools like `list_specifications` work without passing ids every call.
 
-Drop a `.xpecification.json` at your repo root:
+Drop a `.xpec.json` at your repo root:
 
 ```json
 {
@@ -294,19 +294,19 @@ Either field is optional:
 | `productId` only            | `product`           | Product-scoped specs (orphan / pre-aggregation Products work this way)    |
 | Neither                     | `discovery`         | Only `list_workspaces` / `list_products` — bind first to do anything else |
 
-You can also use environment variables: `XPECIFICATION_WORKSPACE_ID`, `XPECIFICATION_PRODUCT_ID`. The file wins over env vars when both are present.
+You can also use environment variables: `XPEC_WORKSPACE_ID`, `XPEC_PRODUCT_ID`. The file wins over env vars when both are present.
 
 ## ✅ Verify the install
 
 ```bash
-XPECIFICATION_API_TOKEN=YOUR_TOKEN npx -y @nextfreelatech/xpecification-mcp --check
+XPEC_API_TOKEN=YOUR_TOKEN npx -y @nextfreelatech/xpec-mcp --check
 ```
 
-Prints `OK: https://app.xpecification.com reachable, N product(s) visible.` on success, or a structured error code (`AUTH_REQUIRED`, `PRODUCT_NOT_BOUND`, …) and remediation when something is off. Add `--json` for machine-readable output.
+Prints `OK: https://xpec.app reachable, N product(s) visible.` on success, or a structured error code (`AUTH_REQUIRED`, `PRODUCT_NOT_BOUND`, …) and remediation when something is off. Add `--json` for machine-readable output.
 
 ## 🔨 Available Tools
 
-All tools take ids as strings. Bound Workspace/Product ids are inferred from `.xpecification.json` unless overridden in the call.
+All tools take ids as strings. Bound Workspace/Product ids are inferred from `.xpec.json` unless overridden in the call.
 
 ### Read tools
 
@@ -334,17 +334,17 @@ All tools take ids as strings. Bound Workspace/Product ids are inferred from `.x
 | `discard_draft`                | Roll a Draft (or Needs Review) back to its last approved version. Rejected on specs that have never been approved.                                                                                       |
 | `create_free_specification`    | Create a new Markdown spec in the bound Free product. Path uniqueness is enforced. Rejected with `PRODUCT_TYPE_MISMATCH` on Web Application Products — use `start_new_version` on a structured spec.     |
 
-> **Note** — the agent never calls "mark reviewed". Approval stays a human action in the Xpecification UI. The MCP can only nudge a draft to `Needs Review`.
+> **Note** — the agent never calls "mark reviewed". Approval stays a human action in the Xpec UI. The MCP can only nudge a draft to `Needs Review`.
 
 ## 🛟 Tips
 
 ### Add a rule
 
-Once installed, tell your agent to consult Xpecification before writing code. Drop this into `CLAUDE.md`, `.cursorrules`, `.windsurfrules`, or your client's equivalent:
+Once installed, tell your agent to consult Xpec before writing code. Drop this into `CLAUDE.md`, `.cursorrules`, `.windsurfrules`, or your client's equivalent:
 
 ```
 Before writing or updating code, planning a feature, or making an architectural
-choice, search and read the relevant Xpecification specs via the xpecification
+choice, search and read the relevant Xpec specs via the xpec
 MCP. Treat them as the source of truth. If a spec is wrong or incomplete, open
 a draft (start_new_version), update it (update_specification_section), and
 request review (request_review) before implementing. Never duplicate spec
@@ -391,12 +391,12 @@ npm run build
 Run the built server:
 
 ```bash
-XPECIFICATION_API_TOKEN=YOUR_TOKEN node dist/cli.js
+XPEC_API_TOKEN=YOUR_TOKEN node dist/cli.js
 ```
 
 ### CLI Arguments
 
-`xpecification-mcp` accepts:
+`xpec-mcp` accepts:
 
 - `serve` _(default)_ — run the MCP server. Stdio unless `--http` is set.
 - `--check` — verify token + API URL and exit `0`/`1`. Pair with `--json` for scripting.
@@ -406,40 +406,40 @@ XPECIFICATION_API_TOKEN=YOUR_TOKEN node dist/cli.js
 - `--port <n>` — port for `--http` (default `3030`).
 - `--host <addr>` — host for `--http` (default `127.0.0.1`).
 - `--cors-origin <o>` — origin to allow (repeatable). Without this, cross-origin browser requests are rejected.
-- `--api-url <url>` — override the Xpecification API base URL.
+- `--api-url <url>` — override the Xpec API base URL.
 - `--allow-insecure` — permit a non-HTTPS `apiUrl` (self-hosted dev only).
 
 ### Environment Variables
 
-| Variable                     | Purpose                                                             |
-| ---------------------------- | ------------------------------------------------------------------- |
-| `XPECIFICATION_API_TOKEN`    | **Required.** Personal Access Token from `/settings/developer`.     |
-| `XPECIFICATION_API_URL`      | Override the API base URL. Default `https://app.xpecification.com`. |
-| `XPECIFICATION_WORKSPACE_ID` | Default Workspace binding when no `.xpecification.json` is present. |
-| `XPECIFICATION_PRODUCT_ID`   | Default Product binding when no `.xpecification.json` is present.   |
-| `XPECIFICATION_TELEMETRY`    | Set to `0` to disable anonymous telemetry.                          |
-| `XPECIFICATION_LOG_LEVEL`    | `debug` \| `info` \| `warn` \| `error` (default `info`).            |
+| Variable            | Purpose                                                         |
+| ------------------- | --------------------------------------------------------------- |
+| `XPEC_API_TOKEN`    | **Required.** Personal Access Token from `/settings/developer`. |
+| `XPEC_API_URL`      | Override the API base URL. Default `https://xpec.app`.          |
+| `XPEC_WORKSPACE_ID` | Default Workspace binding when no `.xpec.json` is present.      |
+| `XPEC_PRODUCT_ID`   | Default Product binding when no `.xpec.json` is present.        |
+| `XPEC_TELEMETRY`    | Set to `0` to disable anonymous telemetry.                      |
+| `XPEC_LOG_LEVEL`    | `debug` \| `info` \| `warn` \| `error` (default `info`).        |
 
-The `--api-url` CLI flag takes precedence over `XPECIFICATION_API_URL`. The `.xpecification.json` `apiUrl` field falls between the two.
+The `--api-url` CLI flag takes precedence over `XPEC_API_URL`. The `.xpec.json` `apiUrl` field falls between the two.
 
 ### Testing with MCP Inspector
 
 ```bash
-XPECIFICATION_API_TOKEN=YOUR_TOKEN \
-  npx -y @modelcontextprotocol/inspector npx @nextfreelatech/xpecification-mcp
+XPEC_API_TOKEN=YOUR_TOKEN \
+  npx -y @modelcontextprotocol/inspector npx @nextfreelatech/xpec-mcp
 ```
 
 ## 🚨 Troubleshooting
 
 **`AUTH_REQUIRED` / 401 from every tool** — token is missing, expired, or revoked. Mint a new one at `/settings/developer` and update your client's `env`.
 
-**`PRODUCT_NOT_BOUND` / `WORKSPACE_NOT_BOUND`** — the tool needs a binding the session doesn't have. Either pass `productId` / `workspaceId` explicitly, or add it to `.xpecification.json` (see [Binding the workspace](#binding-the-workspace)).
+**`PRODUCT_NOT_BOUND` / `WORKSPACE_NOT_BOUND`** — the tool needs a binding the session doesn't have. Either pass `productId` / `workspaceId` explicitly, or add it to `.xpec.json` (see [Binding the workspace](#binding-the-workspace)).
 
 **`STALE_VERSION` from `update_specification_*`** — another writer landed between your read and your write. Re-call `read_specification` to get the current `version`, then retry.
 
 **`OPEN_QUESTIONS_PRESENT` from `request_review`** — call `list_open_questions` first, resolve them in the spec, then retry.
 
-**Legacy `.xpecification.json` shape rejected at startup** — the binding format changed; the CLI prints a remediation pointing to the new shape. Update the file.
+**Legacy `.xpec.json` shape rejected at startup** — the binding format changed; the CLI prints a remediation pointing to the new shape. Update the file.
 
 **`ERR_MODULE_NOT_FOUND` under `npx`** — try `bunx` instead. It often resolves stale npm caches.
 

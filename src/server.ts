@@ -5,27 +5,27 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
-import { XpecificationClient } from "./client.js";
+import { XpecClient } from "./client.js";
 import type { ResolvedConfig } from "./config.js";
 import { McpToolError } from "./errors.js";
 import { logger } from "./logger.js";
 import { registerReadTools, registerWriteTools } from "./tools.js";
 import { registerResources } from "./resources.js";
 
-const SERVER_NAME = "@nextfreelatech/xpecification-mcp";
+const SERVER_NAME = "@nextfreelatech/xpec-mcp";
 const SERVER_VERSION = "1.0.1";
 
 export interface BuildServerOptions {
   config: ResolvedConfig;
   /** Test override — replaces the built-in HTTP client. */
-  client?: XpecificationClient;
+  client?: XpecClient;
 }
 
 export function buildServer(options: BuildServerOptions): McpServer {
   const { config } = options;
   if (!config.token) {
     throw new Error(
-      "XPECIFICATION_API_TOKEN is required. Generate one at /settings/developer.",
+      "XPEC_API_TOKEN is required. Generate one at /settings/developer.",
     );
   }
 
@@ -42,7 +42,7 @@ export function buildServer(options: BuildServerOptions): McpServer {
 
   const client =
     options.client ??
-    new XpecificationClient({ apiUrl: config.apiUrl, token: config.token });
+    new XpecClient({ apiUrl: config.apiUrl, token: config.token });
 
   registerReadTools(server, { client, config });
   registerWriteTools(server, { client, config });
@@ -89,7 +89,7 @@ export async function runStdio(config: ResolvedConfig): Promise<void> {
 }
 
 /**
- * Phase 4 startup probe: detect the legacy `.xpecification.json` shape
+ * Phase 4 startup probe: detect the legacy `.xpec.json` shape
  * (`{"workspaceId": "<old id>"}` whose value is now a Product id, not a
  * Workspace id) and emit `LEGACY_BINDING_DETECTED` with an exact remediation
  * (per mcp-workspace-tools.md §5). Returns `null` when the binding looks
@@ -104,14 +104,14 @@ export async function runStdio(config: ResolvedConfig): Promise<void> {
  */
 export async function detectLegacyBinding(
   config: ResolvedConfig,
-  client: XpecificationClient,
+  client: XpecClient,
 ): Promise<McpToolError | null> {
   if (!config.workspaceId) return null;
   const shape = await client.resolveIdShape(config.workspaceId);
   if (shape !== "product") return null;
   return new McpToolError(
     "LEGACY_BINDING_DETECTED",
-    `The "workspaceId" in .xpecification.json (${config.workspaceId}) refers to a Product under the new model.`,
-    'Edit .xpecification.json: rename "workspaceId" to "productId" to keep current behaviour. To bind a Workspace, create one and set both ids.',
+    `The "workspaceId" in .xpec.json (${config.workspaceId}) refers to a Product under the new model.`,
+    'Edit .xpec.json: rename "workspaceId" to "productId" to keep current behaviour. To bind a Workspace, create one and set both ids.',
   );
 }

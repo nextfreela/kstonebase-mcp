@@ -1,7 +1,7 @@
-// Xpecification HTTP API client. Wraps the /api/mcp/* surface so tool
+// Xpec HTTP API client. Wraps the /api/mcp/* surface so tool
 // handlers stay focused on argument shaping. Every outbound request carries
 // `Authorization: Bearer xpec_pat_…`; no other auth artifacts are sent
-// (per Xpecification spec "mcp-server" §5 "Auth header").
+// (per Xpec spec "mcp-server" §5 "Auth header").
 
 import { McpToolError, mapApiError, type ApiErrorBody } from "./errors.js";
 
@@ -50,7 +50,7 @@ export interface NotModified {
   status: 304;
 }
 
-export class XpecificationClient {
+export class XpecClient {
   private readonly apiUrl: string;
   private readonly token: string;
   private readonly fetcher: typeof fetch;

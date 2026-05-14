@@ -3,16 +3,16 @@
 Guidance for Claude Code when working in this repository. Mirrors `AGENTS.md`;
 update both files together if either changes.
 
-## Xpecification-First Rule
+## Xpec-First Rule
 
 This repository is spec-driven. Before writing or updating code, planning a
-feature, or making an architectural decision, use the `xpecification` MCP to
-find and read the relevant Xpecification specs. Treat Xpecification as the
+feature, or making an architectural decision, use the `xpec` MCP to
+find and read the relevant Xpec specs. Treat Xpec as the
 source of truth.
 
-- Never call the Xpecification HTTP API directly. The Xpecification MCP tools
+- Never call the Xpec HTTP API directly. The Xpec MCP tools
   are the only sanctioned interface to the platform.
-- This repo is already bound through `.xpecification.json`; use that default
+- This repo is already bound through `.xpec.json`; use that default
   binding unless the user explicitly asks you to target a different Workspace
   or Product.
 - Do not rely on stale repo docs, memory, or inferred behavior when a current
@@ -48,12 +48,12 @@ change, update the spec **before** implementing:
 6. Send the draft for human approval with `request_review`.
 
 Never pretend a spec is approved. Only a human marks a spec Reviewed in
-Xpecification — do not claim a draft is "done" or implement against an
+Xpec — do not claim a draft is "done" or implement against an
 unreviewed draft as if it were authoritative.
 
 ## Development Expectations
 
-- Implement code against the current Xpecification spec, not against ad hoc
+- Implement code against the current Xpec spec, not against ad hoc
   repo notes or assumptions.
 - If implementation uncovers a spec gap, pause and update the spec first
   rather than improvising in code.
@@ -66,7 +66,7 @@ unreviewed draft as if it were authoritative.
 
 ## Failure Mode
 
-If Xpecification MCP access is unavailable:
+If Xpec MCP access is unavailable:
 
 - Do not guess on feature behavior or architectural intent.
 - Do not fall back to "what the code currently does" as a substitute for the

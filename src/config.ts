@@ -1,11 +1,11 @@
-// Config + binding resolution (per Xpecification specs "mcp-server" §3+§6
+// Config + binding resolution (per Xpec specs "mcp-server" §3+§6
 // and "mcp-workspace-tools" §4). Phase 4 of the Workspaces epic introduces
 // an aggregation layer above Products, so a project binding can name either
 // a Workspace, a Product, or both.
 //
 // Precedence per binding key (workspaceId, productId):
-//   1. `.xpecification.json` at the project root
-//   2. `XPECIFICATION_WORKSPACE_ID` / `XPECIFICATION_PRODUCT_ID` env vars
+//   1. `.xpec.json` at the project root
+//   2. `XPEC_WORKSPACE_ID` / `XPEC_PRODUCT_ID` env vars
 //   3. unset
 //
 // Effective binding mode is computed from the resolved pair:
@@ -17,15 +17,15 @@
 //
 // API URL precedence:
 //   1. `--api-url` command-line flag (parsed in cli.ts)
-//   2. `apiUrl` in `.xpecification.json`
-//   3. `XPECIFICATION_API_URL` environment variable
-//   4. https://app.xpecification.com (default)
+//   2. `apiUrl` in `.xpec.json`
+//   3. `XPEC_API_URL` environment variable
+//   4. https://app.xpec.com (default)
 
 import { readFileSync } from "node:fs";
 import { resolve as resolvePath } from "node:path";
 
-export const DEFAULT_API_URL = "https://app.xpecification.com";
-export const PROJECT_CONFIG_FILENAME = ".xpecification.json";
+export const DEFAULT_API_URL = "https://app.xpec.com";
+export const PROJECT_CONFIG_FILENAME = ".xpec.json";
 
 export type BindingSource = "argument" | "config-file" | "env" | "none";
 
@@ -48,7 +48,7 @@ export interface ResolvedConfig {
   productSource: Exclude<BindingSource, "argument">;
   /** Effective binding mode derived from the (workspaceId, productId) pair. */
   bindingMode: BindingMode;
-  /** Whether telemetry is allowed. Set to false when `XPECIFICATION_TELEMETRY=0`. */
+  /** Whether telemetry is allowed. Set to false when `XPEC_TELEMETRY=0`. */
   telemetryEnabled: boolean;
   /** When true, `apiUrl` may be plain HTTP. Off by default. */
   allowInsecure: boolean;
@@ -56,7 +56,7 @@ export interface ResolvedConfig {
 
 export interface ConfigOverrides {
   apiUrl?: string;
-  /** Project root used to look for `.xpecification.json`. Defaults to cwd. */
+  /** Project root used to look for `.xpec.json`. Defaults to cwd. */
   cwd?: string;
   /** Test override — replaces process.env reads. */
   env?: NodeJS.ProcessEnv;
@@ -132,10 +132,10 @@ export function resolveConfig(overrides: ConfigOverrides = {}): ResolvedConfig {
     workspaceId = file.workspaceId;
     workspaceSource = "config-file";
   } else if (
-    typeof env.XPECIFICATION_WORKSPACE_ID === "string" &&
-    env.XPECIFICATION_WORKSPACE_ID.length > 0
+    typeof env.XPEC_WORKSPACE_ID === "string" &&
+    env.XPEC_WORKSPACE_ID.length > 0
   ) {
-    workspaceId = env.XPECIFICATION_WORKSPACE_ID;
+    workspaceId = env.XPEC_WORKSPACE_ID;
     workspaceSource = "env";
   }
 
@@ -146,10 +146,10 @@ export function resolveConfig(overrides: ConfigOverrides = {}): ResolvedConfig {
     productId = file.productId;
     productSource = "config-file";
   } else if (
-    typeof env.XPECIFICATION_PRODUCT_ID === "string" &&
-    env.XPECIFICATION_PRODUCT_ID.length > 0
+    typeof env.XPEC_PRODUCT_ID === "string" &&
+    env.XPEC_PRODUCT_ID.length > 0
   ) {
-    productId = env.XPECIFICATION_PRODUCT_ID;
+    productId = env.XPEC_PRODUCT_ID;
     productSource = "env";
   }
 
@@ -168,10 +168,10 @@ export function resolveConfig(overrides: ConfigOverrides = {}): ResolvedConfig {
     apiUrl = file.apiUrl;
     apiUrlSource = "config-file";
   } else if (
-    typeof env.XPECIFICATION_API_URL === "string" &&
-    env.XPECIFICATION_API_URL.length > 0
+    typeof env.XPEC_API_URL === "string" &&
+    env.XPEC_API_URL.length > 0
   ) {
-    apiUrl = env.XPECIFICATION_API_URL;
+    apiUrl = env.XPEC_API_URL;
     apiUrlSource = "env";
   }
   apiUrl = normalizeApiUrl(apiUrl);
@@ -185,13 +185,13 @@ export function resolveConfig(overrides: ConfigOverrides = {}): ResolvedConfig {
 
   // token
   const token =
-    typeof env.XPECIFICATION_API_TOKEN === "string" &&
-    env.XPECIFICATION_API_TOKEN.length > 0
-      ? env.XPECIFICATION_API_TOKEN
+    typeof env.XPEC_API_TOKEN === "string" &&
+    env.XPEC_API_TOKEN.length > 0
+      ? env.XPEC_API_TOKEN
       : null;
 
   // telemetry
-  const telemetryEnabled = env.XPECIFICATION_TELEMETRY !== "0";
+  const telemetryEnabled = env.XPEC_TELEMETRY !== "0";
 
   const bindingMode: BindingMode =
     workspaceId && productId

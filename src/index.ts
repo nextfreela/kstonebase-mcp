@@ -1,12 +1,12 @@
-// Public entry for the @nextfreelatech/xpecification-mcp package. Most users invoke the
-// CLI via `npx -y @nextfreelatech/xpecification-mcp`; this module exists so library
+// Public entry for the @nextfreelatech/xpec-mcp package. Most users invoke the
+// CLI via `npx -y @nextfreelatech/xpec-mcp`; this module exists so library
 // consumers (e.g. an integration test or an embedded MCP gateway) can
 // build the same server programmatically.
 
 export { buildServer, runStdio } from "./server.js";
 export { resolveConfig, ConfigError, DEFAULT_API_URL } from "./config.js";
 export {
-  XpecificationClient,
+  XpecClient,
   type ApiResponse,
   type NotModified,
 } from "./client.js";

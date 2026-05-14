@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// CLI entry point for the @nextfreelatech/xpecification-mcp package.
+// CLI entry point for the @nextfreelatech/xpec-mcp package.
 //
 // Default invocation runs the stdio MCP server, which is what desktop
 // agents (Claude Code, Cursor, Zed) launch as a child process.
@@ -9,7 +9,7 @@
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { ConfigError, resolveConfig } from "./config.js";
-import { XpecificationClient } from "./client.js";
+import { XpecClient } from "./client.js";
 import { McpToolError } from "./errors.js";
 import { DEFAULT_HTTP_HOST, DEFAULT_HTTP_PORT, startHttpServer } from "./http.js";
 import { logger } from "./logger.js";
@@ -85,7 +85,7 @@ function parsePort(raw: string): number {
 }
 
 const HELP_TEXT = `\
-Usage: xpecification-mcp [command] [options]
+Usage: xpec-mcp [command] [options]
 
 Commands:
   serve              Run the MCP server (default). Stdio unless --http is set.
@@ -101,17 +101,17 @@ Transport flags (with serve):
                      cross-origin browser request is rejected.
 
 Other options:
-  --api-url <url>    Override the Xpecification API base URL.
+  --api-url <url>    Override the Xpec API base URL.
   --allow-insecure   Permit a non-HTTPS apiUrl (self-hosted dev only).
   --json             Machine-readable output for --check.
 
 Environment variables:
-  XPECIFICATION_API_TOKEN      Personal Access Token (required).
-  XPECIFICATION_API_URL        Override the API base URL.
-  XPECIFICATION_WORKSPACE_ID   Default Workspace binding.
-  XPECIFICATION_PRODUCT_ID     Default Product binding.
-  XPECIFICATION_TELEMETRY      Set to "0" to disable anonymous telemetry.
-  XPECIFICATION_LOG_LEVEL      debug | info | warn | error (default info).
+  XPEC_API_TOKEN      Personal Access Token (required).
+  XPEC_API_URL        Override the API base URL.
+  XPEC_WORKSPACE_ID   Default Workspace binding.
+  XPEC_PRODUCT_ID     Default Product binding.
+  XPEC_TELEMETRY      Set to "0" to disable anonymous telemetry.
+  XPEC_LOG_LEVEL      debug | info | warn | error (default info).
 `;
 
 export async function main(argv: string[] = process.argv.slice(2)): Promise<number> {
@@ -144,7 +144,7 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<numb
 
   if (!config.token) {
     process.stderr.write(
-      "XPECIFICATION_API_TOKEN is required. Generate one at /settings/developer and re-run.\n",
+      "XPEC_API_TOKEN is required. Generate one at /settings/developer and re-run.\n",
     );
     return 2;
   }
@@ -153,12 +153,12 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<numb
     return runCheck(config.apiUrl, config.token, parsed.json);
   }
 
-  // Phase 4: probe for the legacy `.xpecification.json` shape before
+  // Phase 4: probe for the legacy `.xpec.json` shape before
   // starting any transport. The error is non-fatal at the network level
   // (we keep listening) but the CLI prints a structured remediation and
   // exits — same UX as a missing token.
   try {
-    const probeClient = new XpecificationClient({
+    const probeClient = new XpecClient({
       apiUrl: config.apiUrl,
       token: config.token,
     });
@@ -205,7 +205,7 @@ async function runCheck(
   token: string,
   asJson: boolean,
 ): Promise<number> {
-  const client = new XpecificationClient({ apiUrl, token });
+  const client = new XpecClient({ apiUrl, token });
   try {
     const probe = await client.checkAuth();
     if (asJson) {
@@ -241,8 +241,8 @@ async function runCheck(
 }
 
 // Allow `node cli.js` direct execution while staying importable for tests.
-// We compare realpaths because `npx -y @nextfreelatech/xpecification-mcp` invokes this file
-// through the bin symlink at `node_modules/.bin/xpecification-mcp` — without
+// We compare realpaths because `npx -y @nextfreelatech/xpec-mcp` invokes this file
+// through the bin symlink at `node_modules/.bin/xpec-mcp` — without
 // realpath resolution, `process.argv[1]` (the symlink) would never equal
 // `import.meta.url` (the real path), and `main()` would silently never run.
 function isEntryPoint(): boolean {

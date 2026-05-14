@@ -1,14 +1,14 @@
 {
-  "name": "@nextfreelatech/xpecification-mcp",
+  "name": "@nextfreelatech/xpec-mcp",
   "version": "1.0.1",
-  "description": "Model Context Protocol server for Xpecification — exposes a workspace's specifications to local AI coding agents.",
+  "description": "Model Context Protocol server for Xpec — exposes a workspace's specifications to local AI coding agents.",
   "type": "module",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=22.22"
   },
   "bin": {
-    "xpecification-mcp": "./dist/cli.js"
+    "xpec-mcp": "./dist/cli.js"
   },
   "main": "./dist/index.js",
   "files": [
@@ -17,7 +17,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nextfreela/xpecification-mcp.git",
+    "url": "git+https://github.com/nextfreela/xpec-mcp.git",
     "directory": "."
   },
   "publishConfig": {

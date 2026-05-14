@@ -1,4 +1,4 @@
-name: Publish @nextfreelatech/xpecification-mcp
+name: Publish @nextfreelatech/xpec-mcp
 
 on:
   push:

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { XpecificationClient } from "./client.js";
+import { XpecClient } from "./client.js";
 import { McpToolError } from "./errors.js";
 
 interface MockResponseInit {
@@ -30,12 +30,12 @@ function mockResponse(init: MockResponseInit = {}): Response {
   } as unknown as Response;
 }
 
-describe("XpecificationClient — auth header", () => {
+describe("XpecClient — auth header", () => {
   it("attaches Authorization: Bearer on every call", async () => {
     const fetcher = vi.fn<typeof fetch>(async () =>
       mockResponse({ body: { items: [] } }),
     );
-    const client = new XpecificationClient({
+    const client = new XpecClient({
       apiUrl: "https://app.example.com",
       token: "xpec_pat_TESTTOKEN",
       fetcher: fetcher as unknown as typeof fetch,
@@ -51,7 +51,7 @@ describe("XpecificationClient — auth header", () => {
     const fetcher = vi.fn<typeof fetch>(async () =>
       mockResponse({ body: { items: [] } }),
     );
-    const client = new XpecificationClient({
+    const client = new XpecClient({
       apiUrl: "https://app.example.com//",
       token: "t",
       fetcher: fetcher as unknown as typeof fetch,
@@ -63,12 +63,12 @@ describe("XpecificationClient — auth header", () => {
   });
 });
 
-describe("XpecificationClient — list_specifications query encoding", () => {
+describe("XpecClient — list_specifications query encoding", () => {
   it("repeats the tag param for each tag", async () => {
     const fetcher = vi.fn<typeof fetch>(async () =>
       mockResponse({ body: { items: [] } }),
     );
-    const client = new XpecificationClient({
+    const client = new XpecClient({
       apiUrl: "https://x.example",
       token: "t",
       fetcher: fetcher as unknown as typeof fetch,
@@ -80,7 +80,7 @@ describe("XpecificationClient — list_specifications query encoding", () => {
   });
 });
 
-describe("XpecificationClient — etag handling", () => {
+describe("XpecClient — etag handling", () => {
   it("forwards If-None-Match and surfaces a 304 NotModified", async () => {
     const fetcher = vi.fn<typeof fetch>(async (_url, init) => {
       const ifNoneMatch = (init?.headers as Record<string, string>)[
@@ -91,7 +91,7 @@ describe("XpecificationClient — etag handling", () => {
       }
       return mockResponse({ body: { content: "...", etag: 'W/"v5-raw"' } });
     });
-    const client = new XpecificationClient({
+    const client = new XpecClient({
       apiUrl: "https://x.example",
       token: "t",
       fetcher: fetcher as unknown as typeof fetch,
@@ -109,7 +109,7 @@ describe("XpecificationClient — etag handling", () => {
         headers: { etag: 'W/"v5-raw"' },
       }),
     );
-    const client = new XpecificationClient({
+    const client = new XpecClient({
       apiUrl: "https://x.example",
       token: "t",
       fetcher: fetcher as unknown as typeof fetch,
@@ -119,7 +119,7 @@ describe("XpecificationClient — etag handling", () => {
   });
 });
 
-describe("XpecificationClient — error mapping", () => {
+describe("XpecClient — error mapping", () => {
   it("maps an API 401 to AUTH_FAILED", async () => {
     const fetcher = vi.fn<typeof fetch>(async () =>
       mockResponse({
@@ -127,7 +127,7 @@ describe("XpecificationClient — error mapping", () => {
         body: { error: { code: "UNAUTHORIZED", message: "no auth" } },
       }),
     );
-    const client = new XpecificationClient({
+    const client = new XpecClient({
       apiUrl: "https://x.example",
       token: "t",
       fetcher: fetcher as unknown as typeof fetch,
@@ -149,7 +149,7 @@ describe("XpecificationClient — error mapping", () => {
         },
       }),
     );
-    const client = new XpecificationClient({
+    const client = new XpecClient({
       apiUrl: "https://x.example",
       token: "t",
       fetcher: fetcher as unknown as typeof fetch,
@@ -161,12 +161,12 @@ describe("XpecificationClient — error mapping", () => {
   });
 });
 
-describe("XpecificationClient — checkAuth", () => {
+describe("XpecClient — checkAuth", () => {
   it("returns the product count on success", async () => {
     const fetcher = vi.fn<typeof fetch>(async () =>
       mockResponse({ body: { items: [{ id: "ws_a" }, { id: "ws_b" }] } }),
     );
-    const client = new XpecificationClient({
+    const client = new XpecClient({
       apiUrl: "https://x.example",
       token: "t",
       fetcher: fetcher as unknown as typeof fetch,

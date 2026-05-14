@@ -1,11 +1,11 @@
-// Tool registration for the MCP server (per Xpecification spec "mcp-server" §6
+// Tool registration for the MCP server (per Xpec spec "mcp-server" §6
 // "Tool naming"). Read-only surface for MVP — write tools land with
 // feature #4 (MCP Specification Version Tools).
 
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-import type { XpecificationClient } from "./client.js";
+import type { XpecClient } from "./client.js";
 import type { ResolvedConfig } from "./config.js";
 import {
   McpToolError,
@@ -15,7 +15,7 @@ import {
 import { logger } from "./logger.js";
 
 interface ToolDeps {
-  client: XpecificationClient;
+  client: XpecClient;
   config: ResolvedConfig;
 }
 
@@ -33,7 +33,7 @@ function requireProductId(
   throw new McpToolError(
     "PRODUCT_NOT_BOUND",
     "No product is bound to this MCP session.",
-    "Call list_products, pick one, then add it to .xpecification.json or set XPECIFICATION_PRODUCT_ID.",
+    "Call list_products, pick one, then add it to .xpec.json or set XPEC_PRODUCT_ID.",
   );
 }
 
@@ -50,7 +50,7 @@ function requireWorkspaceId(
   throw new McpToolError(
     "WORKSPACE_NOT_BOUND",
     "No workspace is bound to this MCP session.",
-    "Call list_workspaces, pick one, then add it to .xpecification.json as `workspaceId` or set XPECIFICATION_WORKSPACE_ID.",
+    "Call list_workspaces, pick one, then add it to .xpec.json as `workspaceId` or set XPEC_WORKSPACE_ID.",
   );
 }
 
@@ -93,7 +93,7 @@ function resolveListSpecificationsTarget(
   throw new McpToolError(
     "PRODUCT_NOT_BOUND",
     "No product or workspace is bound to this MCP session.",
-    "Call list_products or list_workspaces to discover ids, then bind in .xpecification.json.",
+    "Call list_products or list_workspaces to discover ids, then bind in .xpec.json.",
   );
 }
 
@@ -128,7 +128,7 @@ function resolveSearchSpecificationsTarget(
   throw new McpToolError(
     "PRODUCT_NOT_BOUND",
     "No product or workspace is bound to this MCP session.",
-    "Call list_products or list_workspaces to discover ids, then bind in .xpecification.json.",
+    "Call list_products or list_workspaces to discover ids, then bind in .xpec.json.",
   );
 }
 
@@ -246,7 +246,7 @@ export function registerReadTools(
     {
       title: "List workspaces",
       description:
-        "List Workspaces visible to this token. Read-only. Use this when discovering which Workspace to bind in .xpecification.json.",
+        "List Workspaces visible to this token. Read-only. Use this when discovering which Workspace to bind in .xpec.json.",
       inputSchema: {},
     },
     async () =>
@@ -561,7 +561,7 @@ export function registerWriteTools(
     {
       title: "Request review on a draft",
       description:
-        "Move a Draft specification to Needs Review so a human can mark it Reviewed in Xpecification. Gated on the spec having no open questions — if questions remain, the response returns OPEN_QUESTIONS_PRESENT and the agent should surface them to the user.",
+        "Move a Draft specification to Needs Review so a human can mark it Reviewed in Xpec. Gated on the spec having no open questions — if questions remain, the response returns OPEN_QUESTIONS_PRESENT and the agent should surface them to the user.",
       inputSchema: { specId: z.string().min(1) },
     },
     async (args) =>

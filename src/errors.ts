@@ -1,5 +1,5 @@
-// MCP-side error mapping (per Xpecification spec "mcp-server" §5 "Error mapping").
-// Translates Xpecification API error envelopes into MCP error codes the
+// MCP-side error mapping (per Xpec spec "mcp-server" §5 "Error mapping").
+// Translates Xpec API error envelopes into MCP error codes the
 // agent can reason about, each carrying a short remediation string.
 
 export type McpStructuredCode =
@@ -55,7 +55,7 @@ export class McpToolError extends Error {
 
 const REMEDIATIONS: Record<McpStructuredCode, string> = {
   AUTH_FAILED:
-    "Regenerate a Personal Access Token from /settings/developer and update XPECIFICATION_API_TOKEN.",
+    "Regenerate a Personal Access Token from /settings/developer and update XPEC_API_TOKEN.",
   TOKEN_EXPIRED:
     "The token expired. Generate a new one from /settings/developer.",
   TOKEN_REVOKED:
@@ -63,15 +63,15 @@ const REMEDIATIONS: Record<McpStructuredCode, string> = {
   TOKEN_SCOPE_MISMATCH:
     "The token isn't scoped to this product. Use a token whose allowlist includes it, or remove the allowlist.",
   PRODUCT_NOT_BOUND:
-    "Call list_products, pick one, then add it to .xpecification.json or set XPECIFICATION_PRODUCT_ID.",
+    "Call list_products, pick one, then add it to .xpec.json or set XPEC_PRODUCT_ID.",
   WORKSPACE_NOT_BOUND:
-    "Call list_workspaces, pick one, then add it to .xpecification.json as `workspaceId` or set XPECIFICATION_WORKSPACE_ID.",
+    "Call list_workspaces, pick one, then add it to .xpec.json as `workspaceId` or set XPEC_WORKSPACE_ID.",
   PRODUCT_TYPE_MISMATCH:
     "The filter you passed isn't compatible with this product's type. Drop the filter or call against a matching product.",
   NOT_IN_WORKSPACE:
-    "This tool requires a Workspace binding. Set `workspaceId` in .xpecification.json or pass it explicitly.",
+    "This tool requires a Workspace binding. Set `workspaceId` in .xpec.json or pass it explicitly.",
   LEGACY_BINDING_DETECTED:
-    'Edit .xpecification.json: rename the "workspaceId" field to "productId" (the value points at a Product under the new model). To bind to a Workspace, create one and set both ids.',
+    'Edit .xpec.json: rename the "workspaceId" field to "productId" (the value points at a Product under the new model). To bind to a Workspace, create one and set both ids.',
   SPEC_LOCKED:
     "The spec is in REVIEWED state. Call start_new_version first to enter Draft.",
   OPEN_QUESTIONS_PRESENT:
@@ -85,7 +85,7 @@ const REMEDIATIONS: Record<McpStructuredCode, string> = {
   VALIDATION_ERROR:
     "Inspect the details — at least one argument failed schema validation.",
   INTERNAL_ERROR:
-    "The Xpecification API hit an unexpected error. Retry once; if it persists, contact support.",
+    "The Xpec API hit an unexpected error. Retry once; if it persists, contact support.",
 };
 
 /**
