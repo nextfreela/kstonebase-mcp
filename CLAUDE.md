@@ -6,7 +6,7 @@ update both files together if either changes.
 ## Xpec-First Rule
 
 This repository is spec-driven. Before writing or updating code, planning a
-feature, or making an architectural decision, use the `xpec` MCP to
+feature, or making an architectural decision, use the **Xpec MCP server** to
 find and read the relevant Xpec specs. Treat Xpec as the
 source of truth.
 
