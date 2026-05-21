@@ -7,9 +7,12 @@ export type McpStructuredCode =
   | "TOKEN_EXPIRED"
   | "TOKEN_REVOKED"
   | "TOKEN_SCOPE_MISMATCH"
+  | "TOKEN_SCOPE_INSUFFICIENT"
   | "PRODUCT_NOT_BOUND"
   | "WORKSPACE_NOT_BOUND"
+  | "WORKSPACE_SCOPE_REQUIRED"
   | "PRODUCT_TYPE_MISMATCH"
+  | "PRODUCT_TYPE_UNSUPPORTED"
   | "NOT_IN_WORKSPACE"
   | "LEGACY_BINDING_DETECTED"
   | "SPEC_LOCKED"
@@ -62,12 +65,18 @@ const REMEDIATIONS: Record<McpStructuredCode, string> = {
     "The token was revoked. Generate a new one from /settings/developer.",
   TOKEN_SCOPE_MISMATCH:
     "The token isn't scoped to this product. Use a token whose allowlist includes it, or remove the allowlist.",
+  TOKEN_SCOPE_INSUFFICIENT:
+    "The token is missing the `write` scope. Regenerate it from /settings/developer with write access.",
   PRODUCT_NOT_BOUND:
     "Call list_products, pick one, then add it to .xpec.json or set XPEC_PRODUCT_ID.",
   WORKSPACE_NOT_BOUND:
     "Call list_workspaces, pick one, then add it to .xpec.json as `workspaceId` or set XPEC_WORKSPACE_ID.",
+  WORKSPACE_SCOPE_REQUIRED:
+    "Re-bind this credential at the Workspace level (workspaceId in .xpec.json, no product allowlist) so it can create Products in the Workspace.",
   PRODUCT_TYPE_MISMATCH:
     "The filter you passed isn't compatible with this product's type. Drop the filter or call against a matching product.",
+  PRODUCT_TYPE_UNSUPPORTED:
+    'This tool only supports specificationManagementType="free" in v1. Omit the field or pass "free" explicitly.',
   NOT_IN_WORKSPACE:
     "This tool requires a Workspace binding. Set `workspaceId` in .xpec.json or pass it explicitly.",
   LEGACY_BINDING_DETECTED:
@@ -113,10 +122,16 @@ function pickStructuredCode(
   const explicitCode = apiCode ?? extractDetailCode(details);
   if (explicitCode) {
     if (explicitCode === "TOKEN_SCOPE_MISMATCH") return "TOKEN_SCOPE_MISMATCH";
+    if (explicitCode === "TOKEN_SCOPE_INSUFFICIENT")
+      return "TOKEN_SCOPE_INSUFFICIENT";
     if (explicitCode === "TOKEN_EXPIRED") return "TOKEN_EXPIRED";
     if (explicitCode === "TOKEN_REVOKED") return "TOKEN_REVOKED";
+    if (explicitCode === "WORKSPACE_SCOPE_REQUIRED")
+      return "WORKSPACE_SCOPE_REQUIRED";
     if (explicitCode === "PRODUCT_TYPE_MISMATCH")
       return "PRODUCT_TYPE_MISMATCH";
+    if (explicitCode === "PRODUCT_TYPE_UNSUPPORTED")
+      return "PRODUCT_TYPE_UNSUPPORTED";
     if (explicitCode === "NOT_IN_WORKSPACE") return "NOT_IN_WORKSPACE";
     if (explicitCode === "SPEC_LOCKED") return "SPEC_LOCKED";
     if (explicitCode === "OPEN_QUESTIONS_PRESENT")

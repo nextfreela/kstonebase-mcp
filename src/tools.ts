@@ -479,6 +479,38 @@ export function registerReadTools(
         return ok(res.body);
       }),
   );
+
+  // ────────────────────────────────────────────────────────────────────
+  // Knowledge-layer read tool (per Xpec MCP spec
+  // "mcp-knowledge-layer-tools").
+  // ────────────────────────────────────────────────────────────────────
+
+  server.registerTool(
+    "find_product_by_subject",
+    {
+      title: "Find products by subject",
+      description:
+        "Search for Products in the bound Workspace by a free-text subject. Read-only. Returns candidates ranked by a lexical score across name, tags, and description. Use this when the agent needs to choose which Product is about a given topic; the calling agent is expected to do its own semantic reranking.",
+      inputSchema: {
+        workspaceId: z.string().optional(),
+        subject: z.string().min(1).max(200),
+        limit: z.number().int().min(1).max(50).optional(),
+      },
+    },
+    async (args) =>
+      runTool(
+        "find_product_by_subject",
+        { workspaceId: args.workspaceId },
+        async () => {
+          const wsId = requireWorkspaceId(config, args.workspaceId);
+          const res = await client.findProductBySubject(wsId, {
+            subject: args.subject,
+            limit: args.limit,
+          });
+          return ok(res.body);
+        },
+      ),
+  );
 }
 
 export function registerWriteTools(
@@ -582,6 +614,68 @@ export function registerWriteTools(
     async (args) =>
       runTool("discard_draft", { specId: args.specId }, async () => {
         const res = await client.discardDraft(args.specId);
+        return ok(res.body);
+      }),
+  );
+
+  // ────────────────────────────────────────────────────────────────────
+  // Knowledge-layer write tools (per Xpec MCP spec
+  // "mcp-knowledge-layer-tools").
+  // ────────────────────────────────────────────────────────────────────
+
+  server.registerTool(
+    "create_product",
+    {
+      title: "Create a Product in the bound Workspace",
+      description:
+        'Create a new Product inside the bound Workspace. Side effect: a new Product row is created with specificationManagementType="free" by default. Requires a Workspace-scope binding; product-allowlist credentials cannot create Products.',
+      inputSchema: {
+        workspaceId: z.string().optional(),
+        name: z.string().trim().min(1).max(80),
+        description: z.string().max(280).optional(),
+        tags: z.array(z.string().min(1).max(40)).max(32).optional(),
+        specificationManagementType: z
+          .enum(["free", "web_application"])
+          .optional(),
+      },
+    },
+    async (args) =>
+      runTool(
+        "create_product",
+        { workspaceId: args.workspaceId },
+        async () => {
+          const wsId = requireWorkspaceId(config, args.workspaceId);
+          const res = await client.createProduct(wsId, {
+            name: args.name,
+            description: args.description,
+            tags: args.tags,
+            specificationManagementType: args.specificationManagementType,
+          });
+          return ok(res.body);
+        },
+      ),
+  );
+
+  server.registerTool(
+    "append_context",
+    {
+      title: "Append a dated section of context to a draft",
+      description:
+        'Append a dated section of Markdown to a Draft specification. Side effect: a new section titled "YYYY-MM-DD — {sectionTitle}" is appended, or the existing same-day section grows downward, via the existing section-apply path. Inherits OCC, the before-image revision, and the Draft-only lock from update_specification_section.',
+      inputSchema: {
+        specId: z.string().min(1),
+        content: z.string().min(1).max(1_000_000),
+        sectionTitle: z.string().trim().min(1).max(100).optional(),
+        version: z.number().int().min(1),
+      },
+    },
+    async (args) =>
+      runTool("append_context", { specId: args.specId }, async () => {
+        const res = await client.appendContext(args.specId, {
+          content: args.content,
+          sectionTitle: args.sectionTitle,
+          version: args.version,
+        });
         return ok(res.body);
       }),
   );

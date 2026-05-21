@@ -361,6 +361,55 @@ export class XpecClient {
   }
 
   // ────────────────────────────────────────────────────────────────────
+  // Knowledge-layer endpoints (per Xpec MCP spec
+  // "mcp-knowledge-layer-tools").
+  // ────────────────────────────────────────────────────────────────────
+
+  createProduct(
+    workspaceId: string,
+    body: {
+      name: string;
+      description?: string;
+      tags?: string[];
+      specificationManagementType?: "free" | "web_application";
+    },
+  ): Promise<ApiResponse<unknown>> {
+    return this.sendJson(
+      "POST",
+      `/api/mcp/workspaces/${encodeURIComponent(workspaceId)}/products`,
+      body,
+    );
+  }
+
+  findProductBySubject(
+    workspaceId: string,
+    query: { subject: string; limit?: number },
+  ): Promise<ApiResponse<unknown>> {
+    const params = new URLSearchParams({ subject: query.subject });
+    if (typeof query.limit === "number") {
+      params.set("limit", String(query.limit));
+    }
+    return this.getJson(
+      `/api/mcp/workspaces/${encodeURIComponent(workspaceId)}/products/search?${params.toString()}`,
+    );
+  }
+
+  appendContext(
+    specId: string,
+    body: {
+      content: string;
+      sectionTitle?: string;
+      version: number;
+    },
+  ): Promise<ApiResponse<unknown>> {
+    return this.sendJson(
+      "POST",
+      `/api/mcp/specifications/${encodeURIComponent(specId)}/append-context`,
+      body,
+    );
+  }
+
+  // ────────────────────────────────────────────────────────────────────
   // Internals
   // ────────────────────────────────────────────────────────────────────
 
