@@ -13,6 +13,7 @@ import {
   type McpFailure,
 } from "./errors.js";
 import { logger } from "./logger.js";
+import { runInitLocalBinding } from "./setup-tool.js";
 
 interface ToolDeps {
   client: XpecClient;
@@ -678,6 +679,48 @@ export function registerWriteTools(
         });
         return ok(res.body);
       }),
+  );
+
+  // ────────────────────────────────────────────────────────────────────
+  // Setup tool (per Xpec MCP spec "mcp-setup-tools" §3). Categorised as a
+  // write tool because it mutates local project state via the agent, but it
+  // performs no remote write — every emitted file is described in the
+  // response, and the agent is responsible for applying it.
+  // ────────────────────────────────────────────────────────────────────
+
+  server.registerTool(
+    "init_local_binding",
+    {
+      title: "Initialise the local Xpec binding",
+      description:
+        "Plan the local files (.xpec.json, optionally CLAUDE.md and AGENTS.md) that bind this directory to an Xpec Workspace or Product. The MCP returns a structured file plan; the agent applies it with its own file-write tool. Idempotent — pass `existingFiles` and `existingXpecJson` so the response carries action=\"skip\" for files already in place, or action=\"conflict\" for a .xpec.json that binds different ids. Pass `force=true` to overwrite.",
+      inputSchema: {
+        workspaceId: z.string().optional(),
+        productId: z.string().optional(),
+        targetDir: z.string().optional(),
+        includeAgentDocs: z.boolean().optional(),
+        force: z.boolean().optional(),
+        existingFiles: z.array(z.string()).optional(),
+        existingXpecJson: z.string().optional(),
+      },
+    },
+    async (args) =>
+      runTool(
+        "init_local_binding",
+        { workspaceId: args.workspaceId, productId: args.productId },
+        async () => {
+          const result = await runInitLocalBinding(args, {
+            client,
+            cwd: process.cwd(),
+            // The user-run package emits the same `nextStep` for stdio and
+            // --http; only the website-hosted remote endpoint is different
+            // (and that endpoint mounts a different transport value when it
+            // wires this handler in).
+            transport: "stdio",
+          });
+          return ok(result);
+        },
+      ),
   );
 
   // Free-spec creation only makes sense when the bound product is Free.
