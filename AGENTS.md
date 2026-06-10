@@ -1,17 +1,17 @@
 # AGENTS.md
 
-## Xpec-First Rule
+## Kstonebase-First Rule
 
 This repository is spec-driven. Before writing or updating code, planning a
-feature, or making an architectural choice, use the **Xpec MCP server** MCP to
-find and read the relevant Xpec specs. Treat Xpec as the
+feature, or making an architectural choice, use the **Kstonebase MCP server** MCP to
+find and read the relevant Kstonebase specs. Treat Kstonebase as the
 source of truth.
 
-Never call the Xpec HTTP API directly from agent workflows. Always use
-the Xpec MCP tools as the only interface to the Xpec
+Never call the Kstonebase HTTP API directly from agent workflows. Always use
+the Kstonebase MCP tools as the only interface to the Kstonebase
 platform.
 
-This repo is already bound through `.xpec.json`; use that default
+This repo is already bound through `.kstonebase.json`; use that default
 binding unless the user explicitly asks you to work against a different
 Workspace or Product.
 
@@ -43,11 +43,11 @@ change, update the spec before implementing:
 6. Send the draft for human approval with `request_review`.
 
 Agents must never pretend a spec is approved. Only a human marks a spec
-Reviewed in Xpec.
+Reviewed in Kstonebase.
 
 ## Development Expectations
 
-- Implement code against the current Xpec spec, not against ad hoc
+- Implement code against the current Kstonebase spec, not against ad hoc
   repo notes.
 - If implementation uncovers a spec gap, pause and update the spec first.
 - Keep tests and behavior aligned with the spec's contracts, statuses, and
@@ -57,6 +57,6 @@ Reviewed in Xpec.
 
 ## Failure Mode
 
-If Xpec MCP access is unavailable, do not guess on feature behavior or
+If Kstonebase MCP access is unavailable, do not guess on feature behavior or
 architectural intent. Ask for access to be restored or for the relevant spec
 details before making substantive changes.

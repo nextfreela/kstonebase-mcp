@@ -2,9 +2,9 @@
   "$schema": "https://developers.openai.com/apps-sdk/schemas/chatgpt-app-submission.v1.json",
   "schema_version": 1,
   "app_info": {
-    "display_name": "Xpec",
+    "display_name": "Kstonebase",
     "subtitle": "Search and update specs",
-    "description": "Xpec helps engineering teams search, read, compare, draft, and review product specifications from ChatGPT so implementation work stays aligned with the current source of truth.",
+    "description": "Kstonebase helps engineering teams search, read, compare, draft, and review product specifications from ChatGPT so implementation work stays aligned with the current source of truth.",
     "category": "DEVELOPER_TOOLS"
   },
   "tools": {
@@ -15,8 +15,8 @@
         "destructiveHint": false
       },
       "justifications": {
-        "read_only_justification": "Only lists product metadata visible to the current Xpec token and does not modify any records.",
-        "open_world_justification": "Only reads private Xpec workspace data and does not publish or send data to public third-party systems.",
+        "read_only_justification": "Only lists product metadata visible to the current Kstonebase token and does not modify any records.",
+        "open_world_justification": "Only reads private Kstonebase workspace data and does not publish or send data to public third-party systems.",
         "destructive_justification": "Does not delete, overwrite, revoke, or perform any irreversible action."
       }
     },
@@ -27,8 +27,8 @@
         "destructiveHint": false
       },
       "justifications": {
-        "read_only_justification": "Only lists workspaces visible to the current Xpec token and does not change state.",
-        "open_world_justification": "Only reads private Xpec data and cannot publish to public internet surfaces.",
+        "read_only_justification": "Only lists workspaces visible to the current Kstonebase token and does not change state.",
+        "open_world_justification": "Only reads private Kstonebase data and cannot publish to public internet surfaces.",
         "destructive_justification": "Does not remove, overwrite, or irreversibly change anything."
       }
     },
@@ -40,7 +40,7 @@
       },
       "justifications": {
         "read_only_justification": "Only returns product metadata and performs no create, update, or delete action.",
-        "open_world_justification": "Only reads private Xpec records and does not send or publish content externally.",
+        "open_world_justification": "Only reads private Kstonebase records and does not send or publish content externally.",
         "destructive_justification": "Does not alter data or trigger any irreversible workflow."
       }
     },
@@ -51,7 +51,7 @@
         "destructiveHint": false
       },
       "justifications": {
-        "read_only_justification": "Only returns workspace metadata and does not modify any Xpec state.",
+        "read_only_justification": "Only returns workspace metadata and does not modify any Kstonebase state.",
         "open_world_justification": "Only reads private workspace information and does not affect public internet state.",
         "destructive_justification": "Does not delete, overwrite, or otherwise cause irreversible changes."
       }
@@ -63,8 +63,8 @@
         "destructiveHint": false
       },
       "justifications": {
-        "read_only_justification": "Only lists specifications and filterable metadata within Xpec without changing any records.",
-        "open_world_justification": "Only reads specifications from private Xpec scopes and does not publish or send data outward.",
+        "read_only_justification": "Only lists specifications and filterable metadata within Kstonebase without changing any records.",
+        "open_world_justification": "Only reads specifications from private Kstonebase scopes and does not publish or send data outward.",
         "destructive_justification": "Does not modify content, status, access, or any irreversible state."
       }
     },
@@ -76,7 +76,7 @@
       },
       "justifications": {
         "read_only_justification": "Only searches titles and content of specifications and returns matching results.",
-        "open_world_justification": "Only queries private Xpec content and does not create public or third-party side effects.",
+        "open_world_justification": "Only queries private Kstonebase content and does not create public or third-party side effects.",
         "destructive_justification": "Does not delete, overwrite, or trigger irreversible actions."
       }
     },
@@ -88,7 +88,7 @@
       },
       "justifications": {
         "read_only_justification": "Only returns the current Markdown content and metadata for a specification.",
-        "open_world_justification": "Only reads private Xpec specification content and does not publish or transmit it externally.",
+        "open_world_justification": "Only reads private Kstonebase specification content and does not publish or transmit it externally.",
         "destructive_justification": "Does not modify the specification or any workflow state."
       }
     },
@@ -100,7 +100,7 @@
       },
       "justifications": {
         "read_only_justification": "Only lists approved revision history for a specification and does not change content.",
-        "open_world_justification": "Only reads private version metadata inside Xpec and does not affect public systems.",
+        "open_world_justification": "Only reads private version metadata inside Kstonebase and does not affect public systems.",
         "destructive_justification": "Does not remove or overwrite any version data."
       }
     },
@@ -112,7 +112,7 @@
       },
       "justifications": {
         "read_only_justification": "Only returns a specific approved specification revision without mutating state.",
-        "open_world_justification": "Only reads historical Xpec content and cannot publish or send it to public destinations.",
+        "open_world_justification": "Only reads historical Kstonebase content and cannot publish or send it to public destinations.",
         "destructive_justification": "Does not modify or delete any revision history."
       }
     },
@@ -124,7 +124,7 @@
       },
       "justifications": {
         "read_only_justification": "Only returns open questions and assumptions attached to a specification.",
-        "open_world_justification": "Only reads private review metadata in Xpec and does not touch public internet state.",
+        "open_world_justification": "Only reads private review metadata in Kstonebase and does not touch public internet state.",
         "destructive_justification": "Does not resolve, delete, or otherwise irreversibly change any question."
       }
     },
@@ -135,8 +135,8 @@
         "destructiveHint": false
       },
       "justifications": {
-        "read_only_justification": "Creates or reopens a draft state for a specification, which changes Xpec workflow state.",
-        "open_world_justification": "Only changes draft state inside a private Xpec workspace and does not publish externally.",
+        "read_only_justification": "Creates or reopens a draft state for a specification, which changes Kstonebase workflow state.",
+        "open_world_justification": "Only changes draft state inside a private Kstonebase workspace and does not publish externally.",
         "destructive_justification": "Does not delete data or perform an irreversible action because it starts a draft workflow."
       }
     },
@@ -147,8 +147,8 @@
         "destructiveHint": false
       },
       "justifications": {
-        "read_only_justification": "Replaces the full Markdown body of a draft specification, which directly modifies Xpec content.",
-        "open_world_justification": "Only updates private specification data in Xpec and does not publish to public internet systems.",
+        "read_only_justification": "Replaces the full Markdown body of a draft specification, which directly modifies Kstonebase content.",
+        "open_world_justification": "Only updates private specification data in Kstonebase and does not publish to public internet systems.",
         "destructive_justification": "Updates draft content but does not itself delete approved history or perform an irreversible external action."
       }
     },
@@ -159,8 +159,8 @@
         "destructiveHint": false
       },
       "justifications": {
-        "read_only_justification": "Replaces a targeted section of a draft specification, which modifies stored Xpec content.",
-        "open_world_justification": "Only updates private specification content in Xpec and cannot publish or send public output.",
+        "read_only_justification": "Replaces a targeted section of a draft specification, which modifies stored Kstonebase content.",
+        "open_world_justification": "Only updates private specification content in Kstonebase and cannot publish or send public output.",
         "destructive_justification": "Changes draft content in place but does not irreversibly delete approved versions."
       }
     },
@@ -172,7 +172,7 @@
       },
       "justifications": {
         "read_only_justification": "Moves a draft specification to Needs Review, which changes its workflow state.",
-        "open_world_justification": "Only updates internal review state inside Xpec and does not publish content publicly.",
+        "open_world_justification": "Only updates internal review state inside Kstonebase and does not publish content publicly.",
         "destructive_justification": "Does not delete or irreversibly overwrite content because human approval still happens separately."
       }
     },
@@ -183,8 +183,8 @@
         "destructiveHint": true
       },
       "justifications": {
-        "read_only_justification": "Restores the last approved version by discarding the current draft, which changes Xpec content and status.",
-        "open_world_justification": "Only changes private Xpec data and does not publish or send anything to public external systems.",
+        "read_only_justification": "Restores the last approved version by discarding the current draft, which changes Kstonebase content and status.",
+        "open_world_justification": "Only changes private Kstonebase data and does not publish or send anything to public external systems.",
         "destructive_justification": "Removes unrecovered draft changes by rolling back to the last approved version, which is an irreversible loss of draft edits."
       }
     },
@@ -195,8 +195,8 @@
         "destructiveHint": false
       },
       "justifications": {
-        "read_only_justification": "Creates a new specification record in a Free product, which adds new Xpec data.",
-        "open_world_justification": "Only creates records inside a private Xpec workspace and does not publish to public internet endpoints.",
+        "read_only_justification": "Creates a new specification record in a Free product, which adds new Kstonebase data.",
+        "open_world_justification": "Only creates records inside a private Kstonebase workspace and does not publish to public internet endpoints.",
         "destructive_justification": "Creates new content but does not delete, revoke, or overwrite existing data irreversibly."
       }
     }
@@ -204,15 +204,15 @@
   "test_cases": [
     {
       "description": "List visible workspaces for initial binding or discovery.",
-      "user_prompt": "List the Workspaces visible to my Xpec token.",
+      "user_prompt": "List the Workspaces visible to my Kstonebase token.",
       "file_attachment_urls": null,
       "tools_triggered": "list_workspaces",
       "expected_output": "Returns the workspaces available to the current token so the user can choose a binding target.",
       "expected_output_url": null
     },
     {
-      "description": "List products available in the current Xpec scope.",
-      "user_prompt": "List the Products I can access in Xpec.",
+      "description": "List products available in the current Kstonebase scope.",
+      "user_prompt": "List the Products I can access in Kstonebase.",
       "file_attachment_urls": null,
       "tools_triggered": "list_products",
       "expected_output": "Returns accessible products with enough metadata for the user to identify the correct product.",
@@ -220,7 +220,7 @@
     },
     {
       "description": "Search specifications by feature keyword.",
-      "user_prompt": "Search my Xpec specs for password reset requirements.",
+      "user_prompt": "Search my Kstonebase specs for password reset requirements.",
       "file_attachment_urls": null,
       "tools_triggered": "search_specifications",
       "expected_output": "Returns matching specifications relevant to password reset work.",
@@ -273,7 +273,7 @@
       "user_prompt": "What meetings do I have tomorrow?",
       "file_attachment_urls": null,
       "tools_triggered": null,
-      "expected_output": "The app should not be invoked because calendar scheduling is outside the Xpec specification workflow.",
+      "expected_output": "The app should not be invoked because calendar scheduling is outside the Kstonebase specification workflow.",
       "expected_output_url": null
     },
     {
@@ -289,7 +289,7 @@
       "user_prompt": "Write a launch announcement for a new coffee shop.",
       "file_attachment_urls": null,
       "tools_triggered": null,
-      "expected_output": "The app should not be invoked because creative writing without Xpec data is outside its purpose.",
+      "expected_output": "The app should not be invoked because creative writing without Kstonebase data is outside its purpose.",
       "expected_output_url": null
     }
   ]

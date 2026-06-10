@@ -1,10 +1,10 @@
 // Resource provider for the MCP server. Phase 4 doubles the surface so
 // agents can address either a Product or a Workspace via stable URIs:
 //
-//   xpec://product/{productId}                  — collection: lists Product specs
-//   xpec://product/{productId}/spec/{specId}    — Product spec Markdown body
-//   xpec://workspace/{workspaceId}              — collection: lists Workspace specs
-//   xpec://workspace/{workspaceId}/spec/{specId} — Workspace spec Markdown body
+//   kstonebase://product/{productId}                  — collection: lists Product specs
+//   kstonebase://product/{productId}/spec/{specId}    — Product spec Markdown body
+//   kstonebase://workspace/{workspaceId}              — collection: lists Workspace specs
+//   kstonebase://workspace/{workspaceId}/spec/{specId} — Workspace spec Markdown body
 //
 // Collection URIs are registered as fixed resources so the agent can
 // list-then-pin. Individual specs are exposed via ResourceTemplates so the
@@ -13,13 +13,13 @@
 
 import { ResourceTemplate, type McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-import type { XpecClient } from "./client.js";
+import type { KstonebaseClient } from "./client.js";
 import type { ResolvedConfig } from "./config.js";
 import { McpToolError } from "./errors.js";
 import { logger } from "./logger.js";
 
 interface ResourceDeps {
-  client: XpecClient;
+  client: KstonebaseClient;
   config: ResolvedConfig;
 }
 
@@ -53,11 +53,11 @@ export function registerResources(
 
 function registerProductResources(
   server: McpServer,
-  client: XpecClient,
+  client: KstonebaseClient,
   productId: string,
 ): void {
   const wsId = productId;
-  const collectionUri = `xpec://product/${wsId}`;
+  const collectionUri = `kstonebase://product/${wsId}`;
 
   server.registerResource(
     "product-specs",
@@ -88,7 +88,7 @@ function registerProductResources(
   // Per-spec template — the agent reads a Markdown body by spec id.
   // The template's `{specId}` slot maps onto a string variable.
   const template = new ResourceTemplate(
-    `xpec://product/${wsId}/spec/{specId}`,
+    `kstonebase://product/${wsId}/spec/{specId}`,
     {
       list: undefined,
     },
@@ -109,7 +109,7 @@ function registerProductResources(
         throw new McpToolError(
           "VALIDATION_ERROR",
           "Resource URI is missing a specId.",
-          "Use the URI shape xpec://product/{productId}/spec/{specId}.",
+          "Use the URI shape kstonebase://product/{productId}/spec/{specId}.",
         );
       }
       try {
@@ -151,10 +151,10 @@ function registerProductResources(
 
 function registerWorkspaceResources(
   server: McpServer,
-  client: XpecClient,
+  client: KstonebaseClient,
   workspaceId: string,
 ): void {
-  const collectionUri = `xpec://workspace/${workspaceId}`;
+  const collectionUri = `kstonebase://workspace/${workspaceId}`;
 
   server.registerResource(
     "workspace-specs",
@@ -185,7 +185,7 @@ function registerWorkspaceResources(
   );
 
   const template = new ResourceTemplate(
-    `xpec://workspace/${workspaceId}/spec/{specId}`,
+    `kstonebase://workspace/${workspaceId}/spec/{specId}`,
     {
       list: undefined,
     },
@@ -206,7 +206,7 @@ function registerWorkspaceResources(
         throw new McpToolError(
           "VALIDATION_ERROR",
           "Resource URI is missing a specId.",
-          "Use the URI shape xpec://workspace/{workspaceId}/spec/{specId}.",
+          "Use the URI shape kstonebase://workspace/{workspaceId}/spec/{specId}.",
         );
       }
       try {

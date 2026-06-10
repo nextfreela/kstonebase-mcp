@@ -1,11 +1,11 @@
-// Tool registration for the MCP server (per Xpec spec "mcp-server" §6
+// Tool registration for the MCP server (per Kstonebase spec "mcp-server" §6
 // "Tool naming"). Read-only surface for MVP — write tools land with
 // feature #4 (MCP Specification Version Tools).
 
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-import type { XpecClient } from "./client.js";
+import type { KstonebaseClient } from "./client.js";
 import type { ResolvedConfig } from "./config.js";
 import {
   McpToolError,
@@ -16,7 +16,7 @@ import { logger } from "./logger.js";
 import { runInitLocalBinding } from "./setup-tool.js";
 
 interface ToolDeps {
-  client: XpecClient;
+  client: KstonebaseClient;
   config: ResolvedConfig;
 }
 
@@ -34,7 +34,7 @@ function requireProductId(
   throw new McpToolError(
     "PRODUCT_NOT_BOUND",
     "No product is bound to this MCP session.",
-    "Call list_products, pick one, then add it to .xpec.json or set XPEC_PRODUCT_ID.",
+    "Call list_products, pick one, then add it to .kstonebase.json or set KSTONEBASE_PRODUCT_ID.",
   );
 }
 
@@ -51,7 +51,7 @@ function requireWorkspaceId(
   throw new McpToolError(
     "WORKSPACE_NOT_BOUND",
     "No workspace is bound to this MCP session.",
-    "Call list_workspaces, pick one, then add it to .xpec.json as `workspaceId` or set XPEC_WORKSPACE_ID.",
+    "Call list_workspaces, pick one, then add it to .kstonebase.json as `workspaceId` or set KSTONEBASE_WORKSPACE_ID.",
   );
 }
 
@@ -94,7 +94,7 @@ function resolveListSpecificationsTarget(
   throw new McpToolError(
     "PRODUCT_NOT_BOUND",
     "No product or workspace is bound to this MCP session.",
-    "Call list_products or list_workspaces to discover ids, then bind in .xpec.json.",
+    "Call list_products or list_workspaces to discover ids, then bind in .kstonebase.json.",
   );
 }
 
@@ -129,7 +129,7 @@ function resolveSearchSpecificationsTarget(
   throw new McpToolError(
     "PRODUCT_NOT_BOUND",
     "No product or workspace is bound to this MCP session.",
-    "Call list_products or list_workspaces to discover ids, then bind in .xpec.json.",
+    "Call list_products or list_workspaces to discover ids, then bind in .kstonebase.json.",
   );
 }
 
@@ -247,7 +247,7 @@ export function registerReadTools(
     {
       title: "List workspaces",
       description:
-        "List Workspaces visible to this token. Read-only. Use this when discovering which Workspace to bind in .xpec.json.",
+        "List Workspaces visible to this token. Read-only. Use this when discovering which Workspace to bind in .kstonebase.json.",
       inputSchema: {},
     },
     async () =>
@@ -482,7 +482,7 @@ export function registerReadTools(
   );
 
   // ────────────────────────────────────────────────────────────────────
-  // Knowledge-layer read tool (per Xpec MCP spec
+  // Knowledge-layer read tool (per Kstonebase MCP spec
   // "mcp-knowledge-layer-tools").
   // ────────────────────────────────────────────────────────────────────
 
@@ -594,7 +594,7 @@ export function registerWriteTools(
     {
       title: "Request review on a draft",
       description:
-        "Move a Draft specification to Needs Review so a human can mark it Reviewed in Xpec. Gated on the spec having no open questions — if questions remain, the response returns OPEN_QUESTIONS_PRESENT and the agent should surface them to the user.",
+        "Move a Draft specification to Needs Review so a human can mark it Reviewed in Kstonebase. Gated on the spec having no open questions — if questions remain, the response returns OPEN_QUESTIONS_PRESENT and the agent should surface them to the user.",
       inputSchema: { specId: z.string().min(1) },
     },
     async (args) =>
@@ -620,7 +620,7 @@ export function registerWriteTools(
   );
 
   // ────────────────────────────────────────────────────────────────────
-  // Knowledge-layer write tools (per Xpec MCP spec
+  // Knowledge-layer write tools (per Kstonebase MCP spec
   // "mcp-knowledge-layer-tools").
   // ────────────────────────────────────────────────────────────────────
 
@@ -682,7 +682,7 @@ export function registerWriteTools(
   );
 
   // ────────────────────────────────────────────────────────────────────
-  // Setup tool (per Xpec MCP spec "mcp-setup-tools" §3). Categorised as a
+  // Setup tool (per Kstonebase MCP spec "mcp-setup-tools" §3). Categorised as a
   // write tool because it mutates local project state via the agent, but it
   // performs no remote write — every emitted file is described in the
   // response, and the agent is responsible for applying it.
@@ -691,9 +691,9 @@ export function registerWriteTools(
   server.registerTool(
     "init_local_binding",
     {
-      title: "Initialise the local Xpec binding",
+      title: "Initialise the local Kstonebase binding",
       description:
-        "Plan the local files (.xpec.json, optionally CLAUDE.md and AGENTS.md) that bind this directory to an Xpec Workspace or Product. The MCP returns a structured file plan; the agent applies it with its own file-write tool. Idempotent — pass `existingFiles` and `existingXpecJson` so the response carries action=\"skip\" for files already in place, or action=\"conflict\" for a .xpec.json that binds different ids. Pass `force=true` to overwrite.",
+        "Plan the local files (.kstonebase.json, optionally CLAUDE.md and AGENTS.md) that bind this directory to an Kstonebase Workspace or Product. The MCP returns a structured file plan; the agent applies it with its own file-write tool. Idempotent — pass `existingFiles` and `existingKstonebaseJson` so the response carries action=\"skip\" for files already in place, or action=\"conflict\" for a .kstonebase.json that binds different ids. Pass `force=true` to overwrite.",
       inputSchema: {
         workspaceId: z.string().optional(),
         productId: z.string().optional(),
@@ -701,7 +701,7 @@ export function registerWriteTools(
         includeAgentDocs: z.boolean().optional(),
         force: z.boolean().optional(),
         existingFiles: z.array(z.string()).optional(),
-        existingXpecJson: z.string().optional(),
+        existingKstonebaseJson: z.string().optional(),
       },
     },
     async (args) =>

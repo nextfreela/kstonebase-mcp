@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { XpecClient } from "./client.js";
+import { KstonebaseClient } from "./client.js";
 import type { ResolvedConfig } from "./config.js";
 import { detectLegacyBinding, waitForTransportClose } from "./server.js";
 
@@ -46,7 +46,7 @@ describe("detectLegacyBinding", () => {
     return {
       apiUrl: "https://api.example",
       apiUrlSource: "default",
-      token: "xpec_pat_x",
+      token: "kstonebase_pat_x",
       workspaceId: null,
       workspaceSource: "none",
       productId: null,
@@ -58,10 +58,10 @@ describe("detectLegacyBinding", () => {
     };
   }
 
-  function clientWithFetch(fetcher: typeof fetch): XpecClient {
-    return new XpecClient({
+  function clientWithFetch(fetcher: typeof fetch): KstonebaseClient {
+    return new KstonebaseClient({
       apiUrl: "https://api.example",
-      token: "xpec_pat_x",
+      token: "kstonebase_pat_x",
       fetcher,
     });
   }

@@ -1,10 +1,10 @@
-// `init_local_binding` tool body (per Xpec MCP spec "mcp-setup-tools").
+// `init_local_binding` tool body (per Kstonebase MCP spec "mcp-setup-tools").
 // Composes the existing read_workspace / read_product handlers to validate
 // the requested binding, then returns a structured file plan the agent
 // applies with its own file-write tool. This module performs zero
 // filesystem I/O — the file plan is data, not side effects.
 
-import type { XpecClient } from "./client.js";
+import type { KstonebaseClient } from "./client.js";
 import { McpToolError } from "./errors.js";
 import {
   renderAgentDocs,
@@ -21,11 +21,11 @@ export interface InitLocalBindingArgs {
   includeAgentDocs?: boolean;
   force?: boolean;
   existingFiles?: string[];
-  existingXpecJson?: string;
+  existingKstonebaseJson?: string;
 }
 
 export interface InitLocalBindingDeps {
-  client: XpecClient;
+  client: KstonebaseClient;
   cwd: string;
   transport: TransportKind;
 }
@@ -53,7 +53,7 @@ export interface InitLocalBindingResult {
   nextStep: string;
 }
 
-const XPEC_JSON_PATH = ".xpec.json";
+const KSTONEBASE_JSON_PATH = ".kstonebase.json";
 const CLAUDE_MD_PATH = "CLAUDE.md";
 const AGENTS_MD_PATH = "AGENTS.md";
 
@@ -117,18 +117,18 @@ export async function runInitLocalBinding(
 
   const targetDir = args.targetDir ?? deps.cwd;
 
-  const xpecJsonContent = renderXpecJson(binding);
+  const kstonebaseJsonContent = renderKstonebaseJson(binding);
   const agentDocsContent = includeAgentDocs ? renderAgentDocs(binding) : null;
 
   const files: FilePlanEntry[] = [];
 
   files.push(
-    resolveXpecJsonEntry({
-      desiredContent: xpecJsonContent,
-      existingRaw: args.existingXpecJson,
+    resolveKstonebaseJsonEntry({
+      desiredContent: kstonebaseJsonContent,
+      existingRaw: args.existingKstonebaseJson,
       isPresent:
-        existingFiles.has(XPEC_JSON_PATH) ||
-        typeof args.existingXpecJson === "string",
+        existingFiles.has(KSTONEBASE_JSON_PATH) ||
+        typeof args.existingKstonebaseJson === "string",
       force,
     }),
   );
@@ -168,28 +168,28 @@ export async function runInitLocalBinding(
 }
 
 /**
- * Canonical `.xpec.json` content per Xpec MCP spec "mcp-workspace-tools" §4:
+ * Canonical `.kstonebase.json` content per Kstonebase MCP spec "mcp-workspace-tools" §4:
  * two-space indentation, keys in the order workspaceId → productId, trailing
  * newline. Only the keys that were provided are emitted. `apiUrl` is
  * intentionally never emitted by this tool (per the setup spec §6).
  */
-export function renderXpecJson(binding: AgentDocsBinding): string {
+export function renderKstonebaseJson(binding: AgentDocsBinding): string {
   const out: Record<string, string> = {};
   if (binding.workspaceId) out.workspaceId = binding.workspaceId;
   if (binding.productId) out.productId = binding.productId;
   return JSON.stringify(out, null, 2) + "\n";
 }
 
-interface XpecJsonResolveArgs {
+interface KstonebaseJsonResolveArgs {
   desiredContent: string;
   existingRaw: string | undefined;
   isPresent: boolean;
   force: boolean;
 }
 
-function resolveXpecJsonEntry(args: XpecJsonResolveArgs): FilePlanEntry {
+function resolveKstonebaseJsonEntry(args: KstonebaseJsonResolveArgs): FilePlanEntry {
   const base: FilePlanEntry = {
-    path: XPEC_JSON_PATH,
+    path: KSTONEBASE_JSON_PATH,
     content: args.desiredContent,
     alreadyExists: args.isPresent,
     action: "create",
@@ -211,7 +211,7 @@ function resolveXpecJsonEntry(args: XpecJsonResolveArgs): FilePlanEntry {
 
   // File is present, force is false. Compare existing vs desired.
   if (typeof args.existingRaw === "string") {
-    const sameIds = compareXpecJsonIds(args.existingRaw, args.desiredContent);
+    const sameIds = compareKstonebaseJsonIds(args.existingRaw, args.desiredContent);
     base.action = sameIds === "match" ? "skip" : "conflict";
     return base;
   }
@@ -223,12 +223,12 @@ function resolveXpecJsonEntry(args: XpecJsonResolveArgs): FilePlanEntry {
   return base;
 }
 
-type XpecJsonCompare = "match" | "differ" | "unparseable";
+type KstonebaseJsonCompare = "match" | "differ" | "unparseable";
 
-function compareXpecJsonIds(
+function compareKstonebaseJsonIds(
   rawExisting: string,
   desired: string,
-): XpecJsonCompare {
+): KstonebaseJsonCompare {
   let existing: unknown;
   try {
     existing = JSON.parse(rawExisting);
@@ -287,7 +287,7 @@ function renderSummary(binding: AgentDocsBinding): string {
   if (binding.workspaceName) {
     return `Bind this directory to workspace "${binding.workspaceName}".`;
   }
-  return "Bind this directory to Xpec.";
+  return "Bind this directory to Kstonebase.";
 }
 
 function renderNextStep(
@@ -309,7 +309,7 @@ function renderNextStep(
 }
 
 async function fetchWorkspace(
-  client: XpecClient,
+  client: KstonebaseClient,
   workspaceId: string,
 ): Promise<WorkspaceLookup> {
   const res = await client.readWorkspace(workspaceId);
@@ -318,7 +318,7 @@ async function fetchWorkspace(
 }
 
 async function fetchProduct(
-  client: XpecClient,
+  client: KstonebaseClient,
   productId: string,
 ): Promise<ProductLookup> {
   const res = await client.readProduct(productId);

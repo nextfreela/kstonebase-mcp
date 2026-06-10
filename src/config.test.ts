@@ -7,16 +7,16 @@ function fileReaderFor(map: Record<string, string>) {
 }
 
 const TEST_CWD = "/proj";
-const FILE_PATH = "/proj/.xpec.json";
+const FILE_PATH = "/proj/.kstonebase.json";
 
 describe("resolveConfig — binding precedence", () => {
-  it("uses .xpec.json productId when present (overrides env)", () => {
+  it("uses .kstonebase.json productId when present (overrides env)", () => {
     const config = resolveConfig({
       cwd: TEST_CWD,
       env: {
         NODE_ENV: "test",
-        XPEC_API_TOKEN: "xpec_pat_x",
-        XPEC_PRODUCT_ID: "p_env",
+        KSTONEBASE_API_TOKEN: "kstonebase_pat_x",
+        KSTONEBASE_PRODUCT_ID: "p_env",
       },
       fileReader: fileReaderFor({
         [FILE_PATH]: JSON.stringify({ productId: "p_file" }),
@@ -33,8 +33,8 @@ describe("resolveConfig — binding precedence", () => {
       cwd: TEST_CWD,
       env: {
         NODE_ENV: "test",
-        XPEC_API_TOKEN: "xpec_pat_x",
-        XPEC_PRODUCT_ID: "p_env",
+        KSTONEBASE_API_TOKEN: "kstonebase_pat_x",
+        KSTONEBASE_PRODUCT_ID: "p_env",
       },
       fileReader: fileReaderFor({}),
     });
@@ -46,7 +46,7 @@ describe("resolveConfig — binding precedence", () => {
   it("resolves workspaceId from the config file", () => {
     const config = resolveConfig({
       cwd: TEST_CWD,
-      env: { NODE_ENV: "test", XPEC_API_TOKEN: "xpec_pat_x" },
+      env: { NODE_ENV: "test", KSTONEBASE_API_TOKEN: "kstonebase_pat_x" },
       fileReader: fileReaderFor({
         [FILE_PATH]: JSON.stringify({ workspaceId: "ws_a" }),
       }),
@@ -57,13 +57,13 @@ describe("resolveConfig — binding precedence", () => {
     expect(config.bindingMode).toBe("workspace");
   });
 
-  it("resolves XPEC_WORKSPACE_ID from env", () => {
+  it("resolves KSTONEBASE_WORKSPACE_ID from env", () => {
     const config = resolveConfig({
       cwd: TEST_CWD,
       env: {
         NODE_ENV: "test",
-        XPEC_API_TOKEN: "xpec_pat_x",
-        XPEC_WORKSPACE_ID: "ws_env",
+        KSTONEBASE_API_TOKEN: "kstonebase_pat_x",
+        KSTONEBASE_WORKSPACE_ID: "ws_env",
       },
       fileReader: fileReaderFor({}),
     });
@@ -75,7 +75,7 @@ describe("resolveConfig — binding precedence", () => {
   it("supports binding to a Product inside a Workspace", () => {
     const config = resolveConfig({
       cwd: TEST_CWD,
-      env: { NODE_ENV: "test", XPEC_API_TOKEN: "xpec_pat_x" },
+      env: { NODE_ENV: "test", KSTONEBASE_API_TOKEN: "kstonebase_pat_x" },
       fileReader: fileReaderFor({
         [FILE_PATH]: JSON.stringify({
           workspaceId: "ws_a",
@@ -91,7 +91,7 @@ describe("resolveConfig — binding precedence", () => {
   it("returns 'discovery' mode when neither id is set", () => {
     const config = resolveConfig({
       cwd: TEST_CWD,
-      env: { NODE_ENV: "test", XPEC_API_TOKEN: "xpec_pat_x" },
+      env: { NODE_ENV: "test", KSTONEBASE_API_TOKEN: "kstonebase_pat_x" },
       fileReader: fileReaderFor({}),
     });
     expect(config.workspaceId).toBeNull();
@@ -102,7 +102,7 @@ describe("resolveConfig — binding precedence", () => {
   it("accepts a config file without any binding ids (discovery mode)", () => {
     const config = resolveConfig({
       cwd: TEST_CWD,
-      env: { NODE_ENV: "test", XPEC_API_TOKEN: "xpec_pat_x" },
+      env: { NODE_ENV: "test", KSTONEBASE_API_TOKEN: "kstonebase_pat_x" },
       fileReader: fileReaderFor({
         [FILE_PATH]: JSON.stringify({ apiUrl: "https://x.example" }),
       }),
@@ -115,7 +115,7 @@ describe("resolveConfig — binding precedence", () => {
       resolveConfig({
         cwd: TEST_CWD,
         env: {
-        NODE_ENV: "test", XPEC_API_TOKEN: "xpec_pat_x" },
+        NODE_ENV: "test", KSTONEBASE_API_TOKEN: "kstonebase_pat_x" },
         fileReader: fileReaderFor({ [FILE_PATH]: "{not json}" }),
       }),
     ).toThrow(ConfigError);
@@ -127,7 +127,7 @@ describe("resolveConfig — apiUrl", () => {
     const config = resolveConfig({
       cwd: TEST_CWD,
       env: {
-        NODE_ENV: "test", XPEC_API_TOKEN: "xpec_pat_x" },
+        NODE_ENV: "test", KSTONEBASE_API_TOKEN: "kstonebase_pat_x" },
       fileReader: fileReaderFor({}),
     });
     expect(config.apiUrl).toBe(DEFAULT_API_URL);
@@ -139,8 +139,8 @@ describe("resolveConfig — apiUrl", () => {
       cwd: TEST_CWD,
       env: {
         NODE_ENV: "test",
-        XPEC_API_TOKEN: "xpec_pat_x",
-        XPEC_API_URL: "https://app.example.com//",
+        KSTONEBASE_API_TOKEN: "kstonebase_pat_x",
+        KSTONEBASE_API_URL: "https://app.example.com//",
       },
       fileReader: fileReaderFor({}),
     });
@@ -153,8 +153,8 @@ describe("resolveConfig — apiUrl", () => {
       cwd: TEST_CWD,
       env: {
         NODE_ENV: "test",
-        XPEC_API_TOKEN: "xpec_pat_x",
-        XPEC_API_URL: "https://env.example",
+        KSTONEBASE_API_TOKEN: "kstonebase_pat_x",
+        KSTONEBASE_API_URL: "https://env.example",
       },
       fileReader: fileReaderFor({
         [FILE_PATH]: JSON.stringify({
@@ -173,8 +173,8 @@ describe("resolveConfig — apiUrl", () => {
         cwd: TEST_CWD,
         env: {
         NODE_ENV: "test",
-          XPEC_API_TOKEN: "xpec_pat_x",
-          XPEC_API_URL: "http://app.example.com",
+          KSTONEBASE_API_TOKEN: "kstonebase_pat_x",
+          KSTONEBASE_API_URL: "http://app.example.com",
         },
         fileReader: fileReaderFor({}),
       }),
@@ -186,8 +186,8 @@ describe("resolveConfig — apiUrl", () => {
       cwd: TEST_CWD,
       env: {
         NODE_ENV: "test",
-        XPEC_API_TOKEN: "xpec_pat_x",
-        XPEC_API_URL: "http://localhost:3000",
+        KSTONEBASE_API_TOKEN: "kstonebase_pat_x",
+        KSTONEBASE_API_URL: "http://localhost:3000",
       },
       fileReader: fileReaderFor({}),
     });
@@ -200,8 +200,8 @@ describe("resolveConfig — apiUrl", () => {
       cwd: TEST_CWD,
       env: {
         NODE_ENV: "test",
-        XPEC_API_TOKEN: "xpec_pat_x",
-        XPEC_API_URL: "http://app.example.com",
+        KSTONEBASE_API_TOKEN: "kstonebase_pat_x",
+        KSTONEBASE_API_URL: "http://app.example.com",
       },
       fileReader: fileReaderFor({}),
     });
@@ -210,13 +210,13 @@ describe("resolveConfig — apiUrl", () => {
 });
 
 describe("resolveConfig — telemetry", () => {
-  it("disables telemetry when XPEC_TELEMETRY=0", () => {
+  it("disables telemetry when KSTONEBASE_TELEMETRY=0", () => {
     const config = resolveConfig({
       cwd: TEST_CWD,
       env: {
         NODE_ENV: "test",
-        XPEC_API_TOKEN: "xpec_pat_x",
-        XPEC_TELEMETRY: "0",
+        KSTONEBASE_API_TOKEN: "kstonebase_pat_x",
+        KSTONEBASE_TELEMETRY: "0",
       },
       fileReader: fileReaderFor({}),
     });
@@ -227,7 +227,7 @@ describe("resolveConfig — telemetry", () => {
     const config = resolveConfig({
       cwd: TEST_CWD,
       env: {
-        NODE_ENV: "test", XPEC_API_TOKEN: "xpec_pat_x" },
+        NODE_ENV: "test", KSTONEBASE_API_TOKEN: "kstonebase_pat_x" },
       fileReader: fileReaderFor({}),
     });
     expect(config.telemetryEnabled).toBe(true);

@@ -25,7 +25,7 @@ const LEVEL_RANK: Record<LogLevel, number> = {
 };
 
 const minLevel: LogLevel =
-  (process.env.XPEC_LOG_LEVEL as LogLevel | undefined) ?? "info";
+  (process.env.KSTONEBASE_LOG_LEVEL as LogLevel | undefined) ?? "info";
 
 function emit(level: LogLevel, message: string, context: LogContext = {}): void {
   if (LEVEL_RANK[level] < LEVEL_RANK[minLevel]) return;

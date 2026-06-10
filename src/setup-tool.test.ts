@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { McpToolError } from "./errors.js";
 import {
-  renderXpecJson,
+  renderKstonebaseJson,
   runInitLocalBinding,
   type InitLocalBindingDeps,
   type TransportKind,
@@ -48,7 +48,7 @@ function fakeClient(state: FakeClientState) {
       }
       return { body: { id, ...p }, etag: null, status: 200 };
     }),
-    // Other XpecClient methods are not exercised by the setup tool.
+    // Other KstonebaseClient methods are not exercised by the setup tool.
   } as unknown as Parameters<typeof runInitLocalBinding>[1]["client"];
 }
 
@@ -68,7 +68,7 @@ const baseState: FakeClientState = {
   workspaces: { W1: { name: "NextFreela" } },
   products: {
     P_FREE: {
-      name: "Xpec Website",
+      name: "Kstonebase Website",
       specificationManagementType: "free",
       workspaceId: "W1",
     },
@@ -143,7 +143,7 @@ describe("runInitLocalBinding — validation", () => {
 });
 
 describe("runInitLocalBinding — file plan", () => {
-  it("emits .xpec.json, CLAUDE.md, AGENTS.md with action=create on a fresh dir", async () => {
+  it("emits .kstonebase.json, CLAUDE.md, AGENTS.md with action=create on a fresh dir", async () => {
     const client = fakeClient(baseState);
     const result = await runInitLocalBinding(
       { workspaceId: "W1", productId: "P_FREE" },
@@ -154,11 +154,11 @@ describe("runInitLocalBinding — file plan", () => {
       workspaceId: "W1",
       workspaceName: "NextFreela",
       productId: "P_FREE",
-      productName: "Xpec Website",
+      productName: "Kstonebase Website",
       productType: "free",
     });
     expect(result.files.map((f) => f.path)).toEqual([
-      ".xpec.json",
+      ".kstonebase.json",
       "CLAUDE.md",
       "AGENTS.md",
     ]);
@@ -174,13 +174,13 @@ describe("runInitLocalBinding — file plan", () => {
     expect(result.files[1].content).toBe(result.files[2].content);
   });
 
-  it("emits only .xpec.json when includeAgentDocs is false", async () => {
+  it("emits only .kstonebase.json when includeAgentDocs is false", async () => {
     const client = fakeClient(baseState);
     const result = await runInitLocalBinding(
       { productId: "P_FREE", includeAgentDocs: false },
       deps(client),
     );
-    expect(result.files.map((f) => f.path)).toEqual([".xpec.json"]);
+    expect(result.files.map((f) => f.path)).toEqual([".kstonebase.json"]);
   });
 
   it("binds a workspace only when productId is absent", async () => {
@@ -208,9 +208,9 @@ describe("runInitLocalBinding — file plan", () => {
 });
 
 describe("runInitLocalBinding — existing-file handshake", () => {
-  it("skips every file when .xpec.json matches and templates already exist", async () => {
+  it("skips every file when .kstonebase.json matches and templates already exist", async () => {
     const client = fakeClient(baseState);
-    const xpecJson = renderXpecJson({
+    const kstonebaseJson = renderKstonebaseJson({
       productId: "P_FREE",
       productName: null,
       productType: null,
@@ -221,8 +221,8 @@ describe("runInitLocalBinding — existing-file handshake", () => {
       {
         workspaceId: "W1",
         productId: "P_FREE",
-        existingFiles: [".xpec.json", "CLAUDE.md", "AGENTS.md"],
-        existingXpecJson: xpecJson,
+        existingFiles: [".kstonebase.json", "CLAUDE.md", "AGENTS.md"],
+        existingKstonebaseJson: kstonebaseJson,
       },
       deps(client),
     );
@@ -239,34 +239,34 @@ describe("runInitLocalBinding — existing-file handshake", () => {
     expect(result.nextStep).toContain("Every file is already in place");
   });
 
-  it("marks .xpec.json as conflict when existing binds different ids", async () => {
+  it("marks .kstonebase.json as conflict when existing binds different ids", async () => {
     const client = fakeClient(baseState);
     const result = await runInitLocalBinding(
       {
         productId: "P_FREE",
-        existingFiles: [".xpec.json"],
-        existingXpecJson: JSON.stringify({ productId: "P_OTHER" }, null, 2),
+        existingFiles: [".kstonebase.json"],
+        existingKstonebaseJson: JSON.stringify({ productId: "P_OTHER" }, null, 2),
       },
       deps(client),
     );
-    const xpec = result.files.find((f) => f.path === ".xpec.json")!;
-    expect(xpec.action).toBe("conflict");
-    expect(xpec.alreadyExists).toBe(true);
+    const kstonebase = result.files.find((f) => f.path === ".kstonebase.json")!;
+    expect(kstonebase.action).toBe("conflict");
+    expect(kstonebase.alreadyExists).toBe(true);
     expect(result.nextStep).toContain("conflict");
   });
 
-  it("marks .xpec.json as conflict when existing content is unparseable", async () => {
+  it("marks .kstonebase.json as conflict when existing content is unparseable", async () => {
     const client = fakeClient(baseState);
     const result = await runInitLocalBinding(
       {
         productId: "P_FREE",
-        existingFiles: [".xpec.json"],
-        existingXpecJson: "{ not valid json",
+        existingFiles: [".kstonebase.json"],
+        existingKstonebaseJson: "{ not valid json",
       },
       deps(client),
     );
-    const xpec = result.files.find((f) => f.path === ".xpec.json")!;
-    expect(xpec.action).toBe("conflict");
+    const kstonebase = result.files.find((f) => f.path === ".kstonebase.json")!;
+    expect(kstonebase.action).toBe("conflict");
   });
 
   it("force=true overwrites every file regardless of state", async () => {
@@ -275,8 +275,8 @@ describe("runInitLocalBinding — existing-file handshake", () => {
       {
         productId: "P_FREE",
         force: true,
-        existingFiles: [".xpec.json", "CLAUDE.md", "AGENTS.md"],
-        existingXpecJson: JSON.stringify({ productId: "P_OTHER" }, null, 2),
+        existingFiles: [".kstonebase.json", "CLAUDE.md", "AGENTS.md"],
+        existingKstonebaseJson: JSON.stringify({ productId: "P_OTHER" }, null, 2),
       },
       deps(client),
     );
@@ -313,9 +313,9 @@ describe("runInitLocalBinding — nextStep per transport", () => {
   });
 });
 
-describe("renderXpecJson", () => {
+describe("renderKstonebaseJson", () => {
   it("emits keys in workspaceId → productId order with a trailing newline", () => {
-    const json = renderXpecJson({
+    const json = renderKstonebaseJson({
       productId: "P",
       productName: null,
       productType: null,
@@ -328,14 +328,14 @@ describe("renderXpecJson", () => {
   });
 
   it("omits keys that are not bound", () => {
-    expect(JSON.parse(renderXpecJson({
+    expect(JSON.parse(renderKstonebaseJson({
       productId: null,
       productName: null,
       productType: null,
       workspaceId: "W",
       workspaceName: null,
     }))).toEqual({ workspaceId: "W" });
-    expect(JSON.parse(renderXpecJson({
+    expect(JSON.parse(renderKstonebaseJson({
       productId: "P",
       productName: null,
       productType: null,
@@ -363,12 +363,12 @@ describe("agent-docs template", () => {
   it("includes the bound entity's name and id", () => {
     const body = renderAgentDocs({
       productId: "P_FREE",
-      productName: "Xpec Website",
+      productName: "Kstonebase Website",
       productType: "free",
       workspaceId: "W1",
       workspaceName: "NextFreela",
     });
-    expect(body).toContain("Xpec Website");
+    expect(body).toContain("Kstonebase Website");
     expect(body).toContain("`P_FREE`");
     expect(body).toContain("NextFreela");
     expect(body).toContain("`W1`");

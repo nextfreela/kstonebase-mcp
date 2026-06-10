@@ -1,5 +1,5 @@
-// MCP-side error mapping (per Xpec spec "mcp-server" §5 "Error mapping").
-// Translates Xpec API error envelopes into MCP error codes the
+// MCP-side error mapping (per Kstonebase spec "mcp-server" §5 "Error mapping").
+// Translates Kstonebase API error envelopes into MCP error codes the
 // agent can reason about, each carrying a short remediation string.
 
 export type McpStructuredCode =
@@ -58,7 +58,7 @@ export class McpToolError extends Error {
 
 const REMEDIATIONS: Record<McpStructuredCode, string> = {
   AUTH_FAILED:
-    "Regenerate a Personal Access Token from /settings/developer and update XPEC_API_TOKEN.",
+    "Regenerate a Personal Access Token from /settings/developer and update KSTONEBASE_API_TOKEN.",
   TOKEN_EXPIRED:
     "The token expired. Generate a new one from /settings/developer.",
   TOKEN_REVOKED:
@@ -68,19 +68,19 @@ const REMEDIATIONS: Record<McpStructuredCode, string> = {
   TOKEN_SCOPE_INSUFFICIENT:
     "The token is missing the `write` scope. Regenerate it from /settings/developer with write access.",
   PRODUCT_NOT_BOUND:
-    "Call list_products, pick one, then add it to .xpec.json or set XPEC_PRODUCT_ID.",
+    "Call list_products, pick one, then add it to .kstonebase.json or set KSTONEBASE_PRODUCT_ID.",
   WORKSPACE_NOT_BOUND:
-    "Call list_workspaces, pick one, then add it to .xpec.json as `workspaceId` or set XPEC_WORKSPACE_ID.",
+    "Call list_workspaces, pick one, then add it to .kstonebase.json as `workspaceId` or set KSTONEBASE_WORKSPACE_ID.",
   WORKSPACE_SCOPE_REQUIRED:
-    "Re-bind this credential at the Workspace level (workspaceId in .xpec.json, no product allowlist) so it can create Products in the Workspace.",
+    "Re-bind this credential at the Workspace level (workspaceId in .kstonebase.json, no product allowlist) so it can create Products in the Workspace.",
   PRODUCT_TYPE_MISMATCH:
     "The filter you passed isn't compatible with this product's type. Drop the filter or call against a matching product.",
   PRODUCT_TYPE_UNSUPPORTED:
     'This tool only supports specificationManagementType="free" in v1. Omit the field or pass "free" explicitly.',
   NOT_IN_WORKSPACE:
-    "This tool requires a Workspace binding. Set `workspaceId` in .xpec.json or pass it explicitly.",
+    "This tool requires a Workspace binding. Set `workspaceId` in .kstonebase.json or pass it explicitly.",
   LEGACY_BINDING_DETECTED:
-    'Edit .xpec.json: rename the "workspaceId" field to "productId" (the value points at a Product under the new model). To bind to a Workspace, create one and set both ids.',
+    'Edit .kstonebase.json: rename the "workspaceId" field to "productId" (the value points at a Product under the new model). To bind to a Workspace, create one and set both ids.',
   SPEC_LOCKED:
     "The spec is in REVIEWED state. Call start_new_version first to enter Draft.",
   OPEN_QUESTIONS_PRESENT:
@@ -94,7 +94,7 @@ const REMEDIATIONS: Record<McpStructuredCode, string> = {
   VALIDATION_ERROR:
     "Inspect the details — at least one argument failed schema validation.",
   INTERNAL_ERROR:
-    "The Xpec API hit an unexpected error. Retry once; if it persists, contact support.",
+    "The Kstonebase API hit an unexpected error. Retry once; if it persists, contact support.",
 };
 
 /**

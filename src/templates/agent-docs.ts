@@ -1,4 +1,4 @@
-// CLAUDE.md / AGENTS.md template body for `init_local_binding`. Per Xpec MCP
+// CLAUDE.md / AGENTS.md template body for `init_local_binding`. Per Kstonebase MCP
 // spec "mcp-setup-tools" §6 — the two files emitted by the tool carry
 // byte-identical bodies. The template is content-neutral on purpose: users
 // append their own project-specific guidance after the generated body.
@@ -27,11 +27,11 @@ export function renderAgentDocs(binding: AgentDocsBinding): string {
   return [
     `# Agent instructions — ${headerName}`,
     "",
-    `${introLine} Treat Xpec as the single source of truth for product, feature, and architectural documentation.`,
+    `${introLine} Treat Kstonebase as the single source of truth for product, feature, and architectural documentation.`,
     "",
     "## Golden rule",
     "",
-    "Before writing any spec, planning any feature, or producing non-trivial code, read the relevant specs from this product via the Xpec MCP server. Do not look for a `docs/` folder, `SPECS/` folder, or `ARCHITECTURE.md`. The repository is intentionally documentation-light; Xpec holds the authoritative copy.",
+    "Before writing any spec, planning any feature, or producing non-trivial code, read the relevant specs from this product via the Kstonebase MCP server. Do not look for a `docs/` folder, `SPECS/` folder, or `ARCHITECTURE.md`. The repository is intentionally documentation-light; Kstonebase holds the authoritative copy.",
     "",
     "## Bound entity",
     "",
@@ -48,12 +48,12 @@ export function renderAgentDocs(binding: AgentDocsBinding): string {
     "3. If the spec is Reviewed, call `start_new_version` first; writes against Reviewed specs fail.",
     "4. Edit with `update_specification_section` (targeted) or `update_specification_content` (full body).",
     "5. Resolve open questions explicitly. Mark assumptions in the document so reviewers can challenge them.",
-    "6. Hand off for review (`request_review`). Do not mark specs Reviewed yourself — approval is a human action in the Xpec UI.",
+    "6. Hand off for review (`request_review`). Do not mark specs Reviewed yourself — approval is a human action in the Kstonebase UI.",
     "",
     "## Don'ts",
     "",
     "- Do not create local Markdown specs (`docs/`, `SPECS/`, `ARCHITECTURE.md`, `RFC-*.md`). Anything found on disk is either tooling config or stale.",
-    "- Do not invent specifications inline in code, PR descriptions, or chat answers when one should exist in Xpec.",
+    "- Do not invent specifications inline in code, PR descriptions, or chat answers when one should exist in Kstonebase.",
     "- Do not skip `start_new_version` when editing a Reviewed spec — the write fails, and retrying without understanding why wastes time.",
     "- Do not assume your training data reflects the current state of a spec. Always read fresh.",
     "",
@@ -63,20 +63,20 @@ export function renderAgentDocs(binding: AgentDocsBinding): string {
 function primaryName(binding: AgentDocsBinding): string {
   if (binding.productName) return binding.productName;
   if (binding.workspaceName) return binding.workspaceName;
-  return "Xpec-bound project";
+  return "Kstonebase-bound project";
 }
 
 function renderIntroLine(binding: AgentDocsBinding): string {
   if (binding.productName && binding.workspaceName) {
-    return `This project is bound to product **${binding.productName}** in workspace **${binding.workspaceName}** in Xpec.`;
+    return `This project is bound to product **${binding.productName}** in workspace **${binding.workspaceName}** in Kstonebase.`;
   }
   if (binding.productName) {
-    return `This project is bound to product **${binding.productName}** in Xpec.`;
+    return `This project is bound to product **${binding.productName}** in Kstonebase.`;
   }
   if (binding.workspaceName) {
-    return `This project is bound to workspace **${binding.workspaceName}** in Xpec.`;
+    return `This project is bound to workspace **${binding.workspaceName}** in Kstonebase.`;
   }
-  return "This project is bound to an Xpec workspace or product.";
+  return "This project is bound to an Kstonebase workspace or product.";
 }
 
 function renderBoundEntity(binding: AgentDocsBinding): string {

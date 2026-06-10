@@ -1,4 +1,4 @@
-// HTTP/SSE transport (per Xpec spec "mcp-server" §3 BDD
+// HTTP/SSE transport (per Kstonebase spec "mcp-server" §3 BDD
 // "HTTP+SSE transport for hosted agents" + §5 "HTTP/SSE transport").
 //
 // This is the hosted-agent path. The MCP SDK's StreamableHTTPServerTransport

@@ -1,7 +1,7 @@
-// Xpec HTTP API client. Wraps the /api/mcp/* surface so tool
+// Kstonebase HTTP API client. Wraps the /api/mcp/* surface so tool
 // handlers stay focused on argument shaping. Every outbound request carries
-// `Authorization: Bearer xpec_pat_…`; no other auth artifacts are sent
-// (per Xpec spec "mcp-server" §5 "Auth header").
+// `Authorization: Bearer kstonebase_pat_…`; no other auth artifacts are sent
+// (per Kstonebase spec "mcp-server" §5 "Auth header").
 
 import { McpToolError, mapApiError, type ApiErrorBody } from "./errors.js";
 
@@ -50,7 +50,7 @@ export interface NotModified {
   status: 304;
 }
 
-export class XpecClient {
+export class KstonebaseClient {
   private readonly apiUrl: string;
   private readonly token: string;
   private readonly fetcher: typeof fetch;
@@ -361,7 +361,7 @@ export class XpecClient {
   }
 
   // ────────────────────────────────────────────────────────────────────
-  // Knowledge-layer endpoints (per Xpec MCP spec
+  // Knowledge-layer endpoints (per Kstonebase MCP spec
   // "mcp-knowledge-layer-tools").
   // ────────────────────────────────────────────────────────────────────
 

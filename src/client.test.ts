@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { XpecClient } from "./client.js";
+import { KstonebaseClient } from "./client.js";
 import { McpToolError } from "./errors.js";
 
 interface MockResponseInit {
@@ -30,28 +30,28 @@ function mockResponse(init: MockResponseInit = {}): Response {
   } as unknown as Response;
 }
 
-describe("XpecClient — auth header", () => {
+describe("KstonebaseClient — auth header", () => {
   it("attaches Authorization: Bearer on every call", async () => {
     const fetcher = vi.fn<typeof fetch>(async () =>
       mockResponse({ body: { items: [] } }),
     );
-    const client = new XpecClient({
+    const client = new KstonebaseClient({
       apiUrl: "https://app.example.com",
-      token: "xpec_pat_TESTTOKEN",
+      token: "kstonebase_pat_TESTTOKEN",
       fetcher: fetcher as unknown as typeof fetch,
     });
     await client.listProducts();
     expect(fetcher).toHaveBeenCalledOnce();
     const [, init] = fetcher.mock.calls[0];
     const headers = init?.headers as Record<string, string>;
-    expect(headers.authorization).toBe("Bearer xpec_pat_TESTTOKEN");
+    expect(headers.authorization).toBe("Bearer kstonebase_pat_TESTTOKEN");
   });
 
   it("strips trailing slashes on the base URL", async () => {
     const fetcher = vi.fn<typeof fetch>(async () =>
       mockResponse({ body: { items: [] } }),
     );
-    const client = new XpecClient({
+    const client = new KstonebaseClient({
       apiUrl: "https://app.example.com//",
       token: "t",
       fetcher: fetcher as unknown as typeof fetch,
@@ -63,12 +63,12 @@ describe("XpecClient — auth header", () => {
   });
 });
 
-describe("XpecClient — list_specifications query encoding", () => {
+describe("KstonebaseClient — list_specifications query encoding", () => {
   it("repeats the tag param for each tag", async () => {
     const fetcher = vi.fn<typeof fetch>(async () =>
       mockResponse({ body: { items: [] } }),
     );
-    const client = new XpecClient({
+    const client = new KstonebaseClient({
       apiUrl: "https://x.example",
       token: "t",
       fetcher: fetcher as unknown as typeof fetch,
@@ -80,7 +80,7 @@ describe("XpecClient — list_specifications query encoding", () => {
   });
 });
 
-describe("XpecClient — etag handling", () => {
+describe("KstonebaseClient — etag handling", () => {
   it("forwards If-None-Match and surfaces a 304 NotModified", async () => {
     const fetcher = vi.fn<typeof fetch>(async (_url, init) => {
       const ifNoneMatch = (init?.headers as Record<string, string>)[
@@ -91,7 +91,7 @@ describe("XpecClient — etag handling", () => {
       }
       return mockResponse({ body: { content: "...", etag: 'W/"v5-raw"' } });
     });
-    const client = new XpecClient({
+    const client = new KstonebaseClient({
       apiUrl: "https://x.example",
       token: "t",
       fetcher: fetcher as unknown as typeof fetch,
@@ -109,7 +109,7 @@ describe("XpecClient — etag handling", () => {
         headers: { etag: 'W/"v5-raw"' },
       }),
     );
-    const client = new XpecClient({
+    const client = new KstonebaseClient({
       apiUrl: "https://x.example",
       token: "t",
       fetcher: fetcher as unknown as typeof fetch,
@@ -119,7 +119,7 @@ describe("XpecClient — etag handling", () => {
   });
 });
 
-describe("XpecClient — error mapping", () => {
+describe("KstonebaseClient — error mapping", () => {
   it("maps an API 401 to AUTH_FAILED", async () => {
     const fetcher = vi.fn<typeof fetch>(async () =>
       mockResponse({
@@ -127,7 +127,7 @@ describe("XpecClient — error mapping", () => {
         body: { error: { code: "UNAUTHORIZED", message: "no auth" } },
       }),
     );
-    const client = new XpecClient({
+    const client = new KstonebaseClient({
       apiUrl: "https://x.example",
       token: "t",
       fetcher: fetcher as unknown as typeof fetch,
@@ -149,7 +149,7 @@ describe("XpecClient — error mapping", () => {
         },
       }),
     );
-    const client = new XpecClient({
+    const client = new KstonebaseClient({
       apiUrl: "https://x.example",
       token: "t",
       fetcher: fetcher as unknown as typeof fetch,
@@ -161,12 +161,12 @@ describe("XpecClient — error mapping", () => {
   });
 });
 
-describe("XpecClient — checkAuth", () => {
+describe("KstonebaseClient — checkAuth", () => {
   it("returns the product count on success", async () => {
     const fetcher = vi.fn<typeof fetch>(async () =>
       mockResponse({ body: { items: [{ id: "ws_a" }, { id: "ws_b" }] } }),
     );
-    const client = new XpecClient({
+    const client = new KstonebaseClient({
       apiUrl: "https://x.example",
       token: "t",
       fetcher: fetcher as unknown as typeof fetch,

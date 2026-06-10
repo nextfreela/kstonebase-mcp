@@ -1,4 +1,4 @@
-name: Publish @nextfreelatech/xpec-mcp
+name: Publish @nextfreelatech/kstonebase-mcp
 
 on:
   push:
