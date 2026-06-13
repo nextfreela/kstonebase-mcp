@@ -144,24 +144,24 @@
       "annotations": {
         "readOnlyHint": false,
         "openWorldHint": false,
-        "destructiveHint": false
+        "destructiveHint": true
       },
       "justifications": {
         "read_only_justification": "Replaces the full Markdown body of a draft specification, which directly modifies Kstonebase content.",
         "open_world_justification": "Only updates private specification data in Kstonebase and does not publish to public internet systems.",
-        "destructive_justification": "Updates draft content but does not itself delete approved history or perform an irreversible external action."
+        "destructive_justification": "Overwrites the current draft body, which may remove draft edits even though approved history remains intact."
       }
     },
     "update_specification_section": {
       "annotations": {
         "readOnlyHint": false,
         "openWorldHint": false,
-        "destructiveHint": false
+        "destructiveHint": true
       },
       "justifications": {
         "read_only_justification": "Replaces a targeted section of a draft specification, which modifies stored Kstonebase content.",
         "open_world_justification": "Only updates private specification content in Kstonebase and cannot publish or send public output.",
-        "destructive_justification": "Changes draft content in place but does not irreversibly delete approved versions."
+        "destructive_justification": "Overwrites the selected draft section, which may remove draft edits even though approved versions are preserved."
       }
     },
     "request_review": {
@@ -198,6 +198,42 @@
         "read_only_justification": "Creates a new specification record in a Free product, which adds new Kstonebase data.",
         "open_world_justification": "Only creates records inside a private Kstonebase workspace and does not publish to public internet endpoints.",
         "destructive_justification": "Creates new content but does not delete, revoke, or overwrite existing data irreversibly."
+      }
+    },
+    "find_product_by_subject": {
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Only searches product metadata visible to the current binding and returns ranked candidates.",
+        "open_world_justification": "Only reads private Kstonebase product metadata and does not publish or send content externally.",
+        "destructive_justification": "Does not create, update, delete, or overwrite any Kstonebase records."
+      }
+    },
+    "create_product": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Creates a new Product inside the approved Kstonebase workspace scope.",
+        "open_world_justification": "Only creates private Kstonebase workspace data and does not publish to public or third-party destinations.",
+        "destructive_justification": "Adds a new Product record and does not delete, overwrite, or revoke existing data."
+      }
+    },
+    "append_context": {
+      "annotations": {
+        "readOnlyHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      },
+      "justifications": {
+        "read_only_justification": "Appends a dated context section to a draft specification, which changes Kstonebase content.",
+        "open_world_justification": "Only updates private Kstonebase specification content and does not publish externally.",
+        "destructive_justification": "Adds context to a draft section and does not delete or overwrite approved specification history."
       }
     }
   },
@@ -256,6 +292,22 @@
       "file_attachment_urls": null,
       "tools_triggered": "start_new_version",
       "expected_output": "Creates or reuses a draft state for the specification and confirms that editing can proceed.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Safely replace one section of a draft specification.",
+      "user_prompt": "For specification spec_123, replace the ## Rollout section with this approved draft text using version 7: ## Rollout\\nWe will release this behind the workspace beta flag.",
+      "file_attachment_urls": null,
+      "tools_triggered": "update_specification_section",
+      "expected_output": "Updates only the requested draft section, preserves approved history, and returns the new specification version token.",
+      "expected_output_url": null
+    },
+    {
+      "description": "Append dated context to a draft specification.",
+      "user_prompt": "Append a dated note to spec_123 under Conversation notes: The reviewer confirmed we should keep human approval before marking specs Reviewed. Use version 8.",
+      "file_attachment_urls": null,
+      "tools_triggered": "append_context",
+      "expected_output": "Adds the note to a dated context section in the draft and returns the updated specification metadata.",
       "expected_output_url": null
     },
     {

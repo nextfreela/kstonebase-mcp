@@ -4,6 +4,7 @@
 
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
 
 import type { KstonebaseClient } from "./client.js";
 import type { ResolvedConfig } from "./config.js";
@@ -19,6 +20,24 @@ interface ToolDeps {
   client: KstonebaseClient;
   config: ResolvedConfig;
 }
+
+const READ_TOOL: ToolAnnotations = {
+  readOnlyHint: true,
+  destructiveHint: false,
+  openWorldHint: false,
+};
+
+const ADDITIVE_WRITE_TOOL: ToolAnnotations = {
+  readOnlyHint: false,
+  destructiveHint: false,
+  openWorldHint: false,
+};
+
+const OVERWRITE_WRITE_TOOL: ToolAnnotations = {
+  readOnlyHint: false,
+  destructiveHint: true,
+  openWorldHint: false,
+};
 
 /**
  * Resolves the effective product id — explicit argument wins, then the
@@ -225,6 +244,7 @@ export function registerReadTools(
       title: "List products",
       description:
         "List Products visible to this token. With a Workspace binding, returns the Workspace's member Products; without, returns orphan Products (Products not attached to any Workspace). Read-only. Use this to discover a productId to bind.",
+      annotations: READ_TOOL,
       inputSchema: {
         workspaceId: z.string().optional(),
       },
@@ -248,6 +268,7 @@ export function registerReadTools(
       title: "List workspaces",
       description:
         "List Workspaces visible to this token. Read-only. Use this when discovering which Workspace to bind in .kstonebase.json.",
+      annotations: READ_TOOL,
       inputSchema: {},
     },
     async () =>
@@ -263,6 +284,7 @@ export function registerReadTools(
       title: "Read a product",
       description:
         "Read a Product's metadata: name, description, specificationManagementType, and member-of Workspace (when set). Read-only.",
+      annotations: READ_TOOL,
       inputSchema: {
         productId: z.string().optional(),
       },
@@ -281,6 +303,7 @@ export function registerReadTools(
       title: "Read a workspace",
       description:
         "Read a Workspace's metadata: name, description, specificationManagementType, archived state. Read-only.",
+      annotations: READ_TOOL,
       inputSchema: {
         workspaceId: z.string().optional(),
       },
@@ -303,6 +326,7 @@ export function registerReadTools(
       title: "List specifications",
       description:
         "List specifications in scope. Read-only. Default scope follows the binding: when both workspaceId and productId are bound, lists the Product's specs; with only workspaceId, lists the Workspace's own specs; with only productId, lists the Product's specs. Pass `scope` and/or `productId`/`workspaceId` to override. Filters are type-aware: Free scopes accept folder/tag; Web Application Products accept the BUSINESS/UX/DESIGN_SYSTEM type filter.",
+      annotations: READ_TOOL,
       inputSchema: {
         scope: z.enum(["workspace", "product"]).optional(),
         productId: z.string().optional(),
@@ -354,6 +378,7 @@ export function registerReadTools(
       title: "Search specifications",
       description:
         "Lexical full-text search across spec titles and content. Read-only. With a Workspace binding, searches both the Workspace's specs and every member Product; results carry a `scope` discriminator. With only a Product binding, searches that Product's specs.",
+      annotations: READ_TOOL,
       inputSchema: {
         scope: z.enum(["workspace", "product"]).optional(),
         productId: z.string().optional(),
@@ -393,6 +418,7 @@ export function registerReadTools(
       title: "Read a specification",
       description:
         'Read the current Markdown content of a specification. Read-only. Returns the document plus status and version. Use format="rendered" when the agent should ignore open-question and assumption markers.',
+      annotations: READ_TOOL,
       inputSchema: {
         specId: z.string().min(1),
         format: z.enum(["raw", "rendered"]).optional(),
@@ -418,6 +444,7 @@ export function registerReadTools(
       title: "List approved versions",
       description:
         "List the approved (user-marked Reviewed) snapshots for a specification, newest first. Read-only.",
+      annotations: READ_TOOL,
       inputSchema: {
         specId: z.string().min(1),
       },
@@ -439,6 +466,7 @@ export function registerReadTools(
       title: "Read an approved version",
       description:
         "Read the full Markdown of a specific approved revision. Read-only. Use this with list_specification_versions to compare past wording with current content.",
+      annotations: READ_TOOL,
       inputSchema: {
         specId: z.string().min(1),
         revisionId: z.string().min(1),
@@ -467,6 +495,7 @@ export function registerReadTools(
       title: "List open questions",
       description:
         "List the questions and assumptions attached to a specification. Read-only. Resolved or dismissed items are excluded by default; pass includeResolved=true to surface the full set.",
+      annotations: READ_TOOL,
       inputSchema: {
         specId: z.string().min(1),
         includeResolved: z.boolean().optional(),
@@ -492,6 +521,7 @@ export function registerReadTools(
       title: "Find products by subject",
       description:
         "Search for Products in the bound Workspace by a free-text subject. Read-only. Returns candidates ranked by a lexical score across name, tags, and description. Use this when the agent needs to choose which Product is about a given topic; the calling agent is expected to do its own semantic reranking.",
+      annotations: READ_TOOL,
       inputSchema: {
         workspaceId: z.string().optional(),
         subject: z.string().min(1).max(200),
@@ -526,6 +556,7 @@ export function registerWriteTools(
       title: "Start a new draft",
       description:
         "Open a new draft of a Reviewed specification. Side effect: status becomes Draft. Does not bump the user-visible version. Required before update_specification_content on a published spec. No-op when the spec is already in Draft (response carries hint=\"already_draft\").",
+      annotations: ADDITIVE_WRITE_TOOL,
       inputSchema: { specId: z.string().min(1) },
     },
     async (args) =>
@@ -541,6 +572,7 @@ export function registerWriteTools(
       title: "Replace a draft's full content",
       description:
         "Replace the entire Markdown body of a Draft specification. Side effect: content + OCC version are updated. Pass `version` from the most recent read to detect concurrent edits. Returns 409 STALE_VERSION when another writer landed first — re-read and retry.",
+      annotations: OVERWRITE_WRITE_TOOL,
       inputSchema: {
         specId: z.string().min(1),
         content: z.string().max(1_000_000),
@@ -567,6 +599,7 @@ export function registerWriteTools(
       title: "Replace a single section of a draft",
       description:
         'Replace one heading-bound section of a Draft specification (e.g. sectionPath="## Pricing"). Side effect: the section text is replaced atomically and a before-image revision is recorded. OCC-guarded — pass `version` from the most recent read.',
+      annotations: OVERWRITE_WRITE_TOOL,
       inputSchema: {
         specId: z.string().min(1),
         sectionPath: z.string().trim().min(1).max(200),
@@ -595,6 +628,7 @@ export function registerWriteTools(
       title: "Request review on a draft",
       description:
         "Move a Draft specification to Needs Review so a human can mark it Reviewed in Kstonebase. Gated on the spec having no open questions — if questions remain, the response returns OPEN_QUESTIONS_PRESENT and the agent should surface them to the user.",
+      annotations: ADDITIVE_WRITE_TOOL,
       inputSchema: { specId: z.string().min(1) },
     },
     async (args) =>
@@ -610,6 +644,7 @@ export function registerWriteTools(
       title: "Discard the current draft",
       description:
         "Roll a Draft (or Needs Review) specification back to its last approved version. Side effect: content is restored from the latest approved revision and status returns to Reviewed. Rejected when the spec has never been approved.",
+      annotations: OVERWRITE_WRITE_TOOL,
       inputSchema: { specId: z.string().min(1) },
     },
     async (args) =>
@@ -630,6 +665,7 @@ export function registerWriteTools(
       title: "Create a Product in the bound Workspace",
       description:
         'Create a new Product inside the bound Workspace. Side effect: a new Product row is created with specificationManagementType="free" by default. Requires a Workspace-scope binding; product-allowlist credentials cannot create Products.',
+      annotations: ADDITIVE_WRITE_TOOL,
       inputSchema: {
         workspaceId: z.string().optional(),
         name: z.string().trim().min(1).max(80),
@@ -663,6 +699,7 @@ export function registerWriteTools(
       title: "Append a dated section of context to a draft",
       description:
         'Append a dated section of Markdown to a Draft specification. Side effect: a new section titled "YYYY-MM-DD — {sectionTitle}" is appended, or the existing same-day section grows downward, via the existing section-apply path. Inherits OCC, the before-image revision, and the Draft-only lock from update_specification_section.',
+      annotations: ADDITIVE_WRITE_TOOL,
       inputSchema: {
         specId: z.string().min(1),
         content: z.string().min(1).max(1_000_000),
@@ -694,6 +731,7 @@ export function registerWriteTools(
       title: "Initialise the local Kstonebase binding",
       description:
         "Plan the local files (.kstonebase.json, optionally CLAUDE.md and AGENTS.md) that bind this directory to an Kstonebase Workspace or Product. The MCP returns a structured file plan; the agent applies it with its own file-write tool. Idempotent — pass `existingFiles` and `existingKstonebaseJson` so the response carries action=\"skip\" for files already in place, or action=\"conflict\" for a .kstonebase.json that binds different ids. Pass `force=true` to overwrite.",
+      annotations: ADDITIVE_WRITE_TOOL,
       inputSchema: {
         workspaceId: z.string().optional(),
         productId: z.string().optional(),
@@ -734,6 +772,7 @@ export function registerWriteTools(
       title: "Create a Free product specification",
       description:
         "Create a new Markdown specification in the bound Free product. Side effect: a new spec row is created at status=Draft, approvedVersion=1. Path uniqueness is enforced. Rejected with PRODUCT_TYPE_MISMATCH when the product is Web Application — use start_new_version on an existing structured spec instead.",
+      annotations: ADDITIVE_WRITE_TOOL,
       inputSchema: {
         productId: z.string().optional(),
         title: z.string().min(1).max(200),
