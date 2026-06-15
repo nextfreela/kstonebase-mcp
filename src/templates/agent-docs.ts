@@ -1,7 +1,8 @@
-// CLAUDE.md / AGENTS.md template body for `init_local_binding`. Per Kstonebase MCP
-// spec "mcp-setup-tools" §6 — the two files emitted by the tool carry
-// byte-identical bodies. The template is content-neutral on purpose: users
-// append their own project-specific guidance after the generated body.
+// CLAUDE.md / AGENTS.md template body for `init_workspace` / `init_product`.
+// Per Kstonebase MCP spec "mcp-setup-tools" §6 — the two files emitted by the
+// tools carry byte-identical bodies. The template is content-neutral on
+// purpose: users append their own project-specific guidance after the
+// generated body.
 
 export type SpecManagementType = "free" | "web_application";
 
@@ -23,6 +24,8 @@ export function renderAgentDocs(binding: AgentDocsBinding): string {
   const introLine = renderIntroLine(binding);
   const boundEntity = renderBoundEntity(binding);
   const toolInventory = renderToolInventory(binding);
+  const scopeNoun = binding.productId ? "product" : "workspace";
+  const boundIdsLine = renderBoundIdsLine(binding);
 
   return [
     `# Agent instructions — ${headerName}`,
@@ -31,7 +34,7 @@ export function renderAgentDocs(binding: AgentDocsBinding): string {
     "",
     "## Golden rule",
     "",
-    "Before writing any spec, planning any feature, or producing non-trivial code, read the relevant specs from this product via the Kstonebase MCP server. Do not look for a `docs/` folder, `SPECS/` folder, or `ARCHITECTURE.md`. The repository is intentionally documentation-light; Kstonebase holds the authoritative copy.",
+    `Before writing any spec, planning any feature, or producing non-trivial code, read the relevant specs from this ${scopeNoun} via the Kstonebase MCP server. Do not look for a \`docs/\` folder, \`SPECS/\` folder, or \`ARCHITECTURE.md\`. The repository is intentionally documentation-light; Kstonebase holds the authoritative copy.`,
     "",
     "## Bound entity",
     "",
@@ -49,6 +52,12 @@ export function renderAgentDocs(binding: AgentDocsBinding): string {
     "4. Edit with `update_specification_section` (targeted) or `update_specification_content` (full body).",
     "5. Resolve open questions explicitly. Mark assumptions in the document so reviewers can challenge them.",
     "6. Hand off for review (`request_review`). Do not mark specs Reviewed yourself — approval is a human action in the Kstonebase UI.",
+    "",
+    "## Bindings",
+    "",
+    `- \`.kstonebase.json\` in this directory binds ${boundIdsLine}.`,
+    "",
+    "Pass these ids to the Kstonebase MCP tools when a call needs an explicit target; otherwise the bound defaults apply.",
     "",
     "## Don'ts",
     "",
@@ -94,6 +103,19 @@ function renderBoundEntity(binding: AgentDocsBinding): string {
     );
   }
   return lines.join("\n");
+}
+
+function renderBoundIdsLine(binding: AgentDocsBinding): string {
+  if (binding.productId && binding.workspaceId) {
+    return `\`productId = ${binding.productId}\` inside \`workspaceId = ${binding.workspaceId}\``;
+  }
+  if (binding.productId) {
+    return `\`productId = ${binding.productId}\``;
+  }
+  if (binding.workspaceId) {
+    return `\`workspaceId = ${binding.workspaceId}\``;
+  }
+  return "no ids (unbound)";
 }
 
 function renderTypeLabel(binding: AgentDocsBinding): string {

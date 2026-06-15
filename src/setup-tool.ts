@@ -1,9 +1,3 @@
-// `init_local_binding` tool body (per Kstonebase MCP spec "mcp-setup-tools").
-// Composes the existing read_workspace / read_product handlers to validate
-// the requested binding, then returns a structured file plan the agent
-// applies with its own file-write tool. This module performs zero
-// filesystem I/O — the file plan is data, not side effects.
-
 import type { KstonebaseClient } from "./client.js";
 import { McpToolError } from "./errors.js";
 import {
@@ -14,7 +8,9 @@ import {
 
 export type TransportKind = "stdio" | "http" | "remote-endpoint";
 
-export interface InitLocalBindingArgs {
+export type InitScope = "workspace" | "product";
+
+export interface InitArgs {
   workspaceId?: string;
   productId?: string;
   targetDir?: string;
@@ -24,10 +20,12 @@ export interface InitLocalBindingArgs {
   existingKstonebaseJson?: string;
 }
 
-export interface InitLocalBindingDeps {
+export interface InitDeps {
   client: KstonebaseClient;
   cwd: string;
   transport: TransportKind;
+  boundWorkspaceId?: string | null;
+  boundProductId?: string | null;
 }
 
 export type FileAction = "create" | "skip" | "conflict" | "overwrite";
@@ -39,7 +37,8 @@ export interface FilePlanEntry {
   action: FileAction;
 }
 
-export interface InitLocalBindingResult {
+export interface PlannedResult {
+  status: "planned";
   summary: string;
   binding: {
     workspaceId: string | null;
@@ -52,6 +51,27 @@ export interface InitLocalBindingResult {
   files: FilePlanEntry[];
   nextStep: string;
 }
+
+export interface WorkspaceCandidate {
+  id: string;
+  name: string | null;
+}
+
+export interface ProductCandidate {
+  id: string;
+  name: string | null;
+  specificationManagementType: SpecManagementType | null;
+}
+
+export interface NeedsSelectionResult {
+  status: "needs_selection";
+  scope: InitScope;
+  summary: string;
+  candidates: WorkspaceCandidate[] | ProductCandidate[];
+  nextStep: string;
+}
+
+export type InitResult = PlannedResult | NeedsSelectionResult;
 
 const KSTONEBASE_JSON_PATH = ".kstonebase.json";
 const CLAUDE_MD_PATH = "CLAUDE.md";
@@ -69,52 +89,109 @@ interface ProductLookup {
   workspaceId: string | null;
 }
 
-export async function runInitLocalBinding(
-  args: InitLocalBindingArgs,
-  deps: InitLocalBindingDeps,
-): Promise<InitLocalBindingResult> {
-  const hasWorkspaceId =
-    typeof args.workspaceId === "string" && args.workspaceId.length > 0;
-  const hasProductId =
-    typeof args.productId === "string" && args.productId.length > 0;
+export async function runInitWorkspace(
+  args: InitArgs,
+  deps: InitDeps,
+): Promise<InitResult> {
+  const effectiveWorkspaceId = resolveEffectiveId(
+    "workspaceId",
+    args.workspaceId,
+    args.existingKstonebaseJson,
+    deps.boundWorkspaceId,
+  );
 
-  if (!hasWorkspaceId && !hasProductId) {
+  if (!effectiveWorkspaceId) {
+    const candidates = await listWorkspaceCandidates(deps.client);
+    return {
+      status: "needs_selection",
+      scope: "workspace",
+      summary:
+        "No workspace is bound to this directory yet. Ask the user which workspace to bind, then call init_workspace again with the chosen workspaceId.",
+      candidates,
+      nextStep:
+        "Present these workspaces to the user, then call init_workspace again with the chosen workspaceId.",
+    };
+  }
+
+  const workspace = await fetchWorkspace(deps.client, effectiveWorkspaceId);
+  const binding: AgentDocsBinding = {
+    productId: null,
+    productName: null,
+    productType: null,
+    workspaceId: workspace.id,
+    workspaceName: workspace.name,
+  };
+  return buildPlanned(binding, args, deps);
+}
+
+export async function runInitProduct(
+  args: InitArgs,
+  deps: InitDeps,
+): Promise<InitResult> {
+  const effectiveProductId = resolveEffectiveId(
+    "productId",
+    args.productId,
+    args.existingKstonebaseJson,
+    deps.boundProductId,
+  );
+
+  if (!effectiveProductId) {
+    const workspaceScope = resolveEffectiveId(
+      "workspaceId",
+      args.workspaceId,
+      args.existingKstonebaseJson,
+      deps.boundWorkspaceId,
+    );
+    const candidates = await listProductCandidates(deps.client, workspaceScope);
+    const scoped = workspaceScope ? ` in workspace ${workspaceScope}` : "";
+    return {
+      status: "needs_selection",
+      scope: "product",
+      summary: `No product is bound to this directory yet. Ask the user which product to bind${scoped}, then call init_product again with the chosen productId.`,
+      candidates,
+      nextStep:
+        "Present these products to the user, then call init_product again with the chosen productId. You may pass a workspaceId (discover it with list_workspaces) to scope the product list.",
+    };
+  }
+
+  const product = await fetchProduct(deps.client, effectiveProductId);
+
+  if (
+    typeof args.workspaceId === "string" &&
+    args.workspaceId.length > 0 &&
+    product.workspaceId &&
+    args.workspaceId !== product.workspaceId
+  ) {
     throw new McpToolError(
       "VALIDATION_ERROR",
-      "init_local_binding requires at least one of `workspaceId` or `productId`.",
-      "Pass workspaceId, productId, or both. Discover ids with list_workspaces / list_products / find_product_by_subject first.",
+      `Product "${product.name}" (${product.id}) is not in workspace ${args.workspaceId}; it belongs to ${product.workspaceId}.`,
+      "Pass the product's own workspace, or omit workspaceId to bind the product on its own.",
     );
   }
 
-  const workspace = hasWorkspaceId
-    ? await fetchWorkspace(deps.client, args.workspaceId as string)
+  const workspaceId = product.workspaceId ?? args.workspaceId ?? null;
+  const workspaceName = workspaceId
+    ? await fetchWorkspaceNameBestEffort(deps.client, workspaceId)
     : null;
-  const product = hasProductId
-    ? await fetchProduct(deps.client, args.productId as string)
-    : null;
-
-  if (workspace && product) {
-    if (product.workspaceId !== workspace.id) {
-      throw new McpToolError(
-        "VALIDATION_ERROR",
-        `Product "${product.name}" (${product.id}) is not in workspace "${workspace.name}" (${workspace.id}).`,
-        "Pass a workspaceId that owns this product, or omit workspaceId to bind the product on its own.",
-      );
-    }
-  }
 
   const binding: AgentDocsBinding = {
-    productId: product?.id ?? null,
-    productName: product?.name ?? null,
-    productType: product?.type ?? null,
-    workspaceId: workspace?.id ?? null,
-    workspaceName: workspace?.name ?? null,
+    productId: product.id,
+    productName: product.name,
+    productType: product.type,
+    workspaceId,
+    workspaceName,
   };
+  return buildPlanned(binding, args, deps);
+}
 
+function buildPlanned(
+  binding: AgentDocsBinding,
+  args: InitArgs,
+  deps: InitDeps,
+): PlannedResult {
   const includeAgentDocs = args.includeAgentDocs !== false;
   const force = args.force === true;
   const existingFiles = new Set(args.existingFiles ?? []);
-
   const targetDir = args.targetDir ?? deps.cwd;
 
   const kstonebaseJsonContent = renderKstonebaseJson(binding);
@@ -153,6 +230,7 @@ export async function runInitLocalBinding(
   }
 
   return {
+    status: "planned",
     summary: renderSummary(binding),
     binding: {
       workspaceId: binding.workspaceId,
@@ -167,12 +245,35 @@ export async function runInitLocalBinding(
   };
 }
 
-/**
- * Canonical `.kstonebase.json` content per Kstonebase MCP spec "mcp-workspace-tools" §4:
- * two-space indentation, keys in the order workspaceId → productId, trailing
- * newline. Only the keys that were provided are emitted. `apiUrl` is
- * intentionally never emitted by this tool (per the setup spec §6).
- */
+function resolveEffectiveId(
+  key: "workspaceId" | "productId",
+  explicit: string | undefined,
+  existingRaw: string | undefined,
+  bound: string | null | undefined,
+): string | null {
+  if (typeof explicit === "string" && explicit.length > 0) return explicit;
+  const fromFile = parseBindingId(existingRaw, key);
+  if (fromFile) return fromFile;
+  if (typeof bound === "string" && bound.length > 0) return bound;
+  return null;
+}
+
+function parseBindingId(
+  raw: string | undefined,
+  key: "workspaceId" | "productId",
+): string | null {
+  if (typeof raw !== "string") return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  if (!isPlainObject(parsed)) return null;
+  const v = parsed[key];
+  return typeof v === "string" && v.length > 0 ? v : null;
+}
+
 export function renderKstonebaseJson(binding: AgentDocsBinding): string {
   const out: Record<string, string> = {};
   if (binding.workspaceId) out.workspaceId = binding.workspaceId;
@@ -187,7 +288,9 @@ interface KstonebaseJsonResolveArgs {
   force: boolean;
 }
 
-function resolveKstonebaseJsonEntry(args: KstonebaseJsonResolveArgs): FilePlanEntry {
+function resolveKstonebaseJsonEntry(
+  args: KstonebaseJsonResolveArgs,
+): FilePlanEntry {
   const base: FilePlanEntry = {
     path: KSTONEBASE_JSON_PATH,
     content: args.desiredContent,
@@ -196,11 +299,7 @@ function resolveKstonebaseJsonEntry(args: KstonebaseJsonResolveArgs): FilePlanEn
   };
 
   if (args.force) {
-    if (args.isPresent) {
-      base.action = "overwrite";
-    } else {
-      base.action = "create";
-    }
+    base.action = args.isPresent ? "overwrite" : "create";
     return base;
   }
 
@@ -209,16 +308,15 @@ function resolveKstonebaseJsonEntry(args: KstonebaseJsonResolveArgs): FilePlanEn
     return base;
   }
 
-  // File is present, force is false. Compare existing vs desired.
   if (typeof args.existingRaw === "string") {
-    const sameIds = compareKstonebaseJsonIds(args.existingRaw, args.desiredContent);
+    const sameIds = compareKstonebaseJsonIds(
+      args.existingRaw,
+      args.desiredContent,
+    );
     base.action = sameIds === "match" ? "skip" : "conflict";
     return base;
   }
 
-  // Marked as present in existingFiles but raw content wasn't supplied — we
-  // can't tell if the ids match. Treat as conflict so the agent surfaces the
-  // ambiguity rather than overwriting silently.
   base.action = "conflict";
   return base;
 }
@@ -248,9 +346,7 @@ function compareKstonebaseJsonIds(
     : "differ";
 }
 
-function isPlainObject(
-  value: unknown,
-): value is Record<string, unknown> {
+function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
@@ -296,7 +392,7 @@ function renderNextStep(
 ): string {
   const conflict = files.some((f) => f.action === "conflict");
   if (conflict) {
-    return "One or more files conflict with existing local content. Surface the diff to the user before re-invoking init_local_binding with force=true.";
+    return "One or more files conflict with existing local content. Surface the diff to the user before re-invoking with force=true.";
   }
   const allSkipped = files.every((f) => f.action === "skip");
   if (allSkipped) {
@@ -317,18 +413,68 @@ async function fetchWorkspace(
   return { id: workspaceId, name };
 }
 
+async function fetchWorkspaceNameBestEffort(
+  client: KstonebaseClient,
+  workspaceId: string,
+): Promise<string | null> {
+  try {
+    return (await fetchWorkspace(client, workspaceId)).name;
+  } catch {
+    return null;
+  }
+}
+
 async function fetchProduct(
   client: KstonebaseClient,
   productId: string,
 ): Promise<ProductLookup> {
   const res = await client.readProduct(productId);
   const name = pickString(res.body, "name") ?? productId;
-  const rawType =
-    pickString(res.body, "specificationManagementType") ?? "free";
-  const type: SpecManagementType =
-    rawType === "web_application" ? "web_application" : "free";
-  const workspaceId = pickString(res.body, "workspaceId") ?? null;
-  return { id: productId, name, type, workspaceId };
+  const type = normalizeType(
+    pickString(res.body, "specificationManagementType"),
+  );
+  const workspaceId = pickString(res.body, "workspaceId");
+  return { id: productId, name, type: type ?? "free", workspaceId };
+}
+
+async function listWorkspaceCandidates(
+  client: KstonebaseClient,
+): Promise<WorkspaceCandidate[]> {
+  const res = await client.listWorkspaces();
+  return extractItems(res.body)
+    .map((w) => ({ id: pickString(w, "id") ?? "", name: pickString(w, "name") }))
+    .filter((c) => c.id.length > 0);
+}
+
+async function listProductCandidates(
+  client: KstonebaseClient,
+  workspaceId: string | null,
+): Promise<ProductCandidate[]> {
+  const res = workspaceId
+    ? await client.listProducts({ workspaceId })
+    : await client.listProducts({ orphan: true });
+  return extractItems(res.body)
+    .map((p) => ({
+      id: pickString(p, "id") ?? "",
+      name: pickString(p, "name"),
+      specificationManagementType: normalizeType(
+        pickString(p, "specificationManagementType"),
+      ),
+    }))
+    .filter((c) => c.id.length > 0);
+}
+
+function extractItems(body: unknown): Record<string, unknown>[] {
+  if (!isPlainObject(body)) return [];
+  const items = body.items;
+  if (!Array.isArray(items)) return [];
+  return items.filter(isPlainObject);
+}
+
+function normalizeType(raw: string | null): SpecManagementType | null {
+  if (raw === "free") return "free";
+  if (raw === "web_application") return "web_application";
+  return null;
 }
 
 function pickString(body: unknown, key: string): string | null {

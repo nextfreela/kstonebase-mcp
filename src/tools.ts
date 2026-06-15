@@ -14,7 +14,7 @@ import {
   type McpFailure,
 } from "./errors.js";
 import { logger } from "./logger.js";
-import { runInitLocalBinding } from "./setup-tool.js";
+import { runInitProduct, runInitWorkspace } from "./setup-tool.js";
 
 interface ToolDeps {
   client: KstonebaseClient;
@@ -718,23 +718,23 @@ export function registerWriteTools(
       }),
   );
 
-  // ────────────────────────────────────────────────────────────────────
-  // Setup tool (per Kstonebase MCP spec "mcp-setup-tools" §3). Categorised as a
-  // write tool because it mutates local project state via the agent, but it
-  // performs no remote write — every emitted file is described in the
-  // response, and the agent is responsible for applying it.
-  // ────────────────────────────────────────────────────────────────────
+  const setupDeps = () => ({
+    client,
+    cwd: process.cwd(),
+    transport: "stdio" as const,
+    boundWorkspaceId: config.workspaceId,
+    boundProductId: config.productId,
+  });
 
   server.registerTool(
-    "init_local_binding",
+    "init_workspace",
     {
-      title: "Initialise the local Kstonebase binding",
+      title: "Initialise a local Kstonebase workspace binding",
       description:
-        "Plan the local files (.kstonebase.json, optionally CLAUDE.md and AGENTS.md) that bind this directory to an Kstonebase Workspace or Product. The MCP returns a structured file plan; the agent applies it with its own file-write tool. Idempotent — pass `existingFiles` and `existingKstonebaseJson` so the response carries action=\"skip\" for files already in place, or action=\"conflict\" for a .kstonebase.json that binds different ids. Pass `force=true` to overwrite.",
+        "Plan the local files (.kstonebase.json, optionally CLAUDE.md and AGENTS.md) that bind this directory to a Kstonebase Workspace. Returns a structured file plan the agent applies with its own file-write tool. When no workspaceId is supplied and the directory is not already bound, returns status=\"needs_selection\" with the candidate workspaces — present them to the user, then call again with the chosen workspaceId. Idempotent — pass `existingFiles` and `existingKstonebaseJson` so the response carries action=\"skip\" for files already in place, or action=\"conflict\" for a .kstonebase.json that binds different ids. Pass `force=true` to overwrite.",
       annotations: ADDITIVE_WRITE_TOOL,
       inputSchema: {
         workspaceId: z.string().optional(),
-        productId: z.string().optional(),
         targetDir: z.string().optional(),
         includeAgentDocs: z.boolean().optional(),
         force: z.boolean().optional(),
@@ -744,20 +744,34 @@ export function registerWriteTools(
     },
     async (args) =>
       runTool(
-        "init_local_binding",
-        { workspaceId: args.workspaceId, productId: args.productId },
-        async () => {
-          const result = await runInitLocalBinding(args, {
-            client,
-            cwd: process.cwd(),
-            // The user-run package emits the same `nextStep` for stdio and
-            // --http; only the website-hosted remote endpoint is different
-            // (and that endpoint mounts a different transport value when it
-            // wires this handler in).
-            transport: "stdio",
-          });
-          return ok(result);
-        },
+        "init_workspace",
+        { workspaceId: args.workspaceId },
+        async () => ok(await runInitWorkspace(args, setupDeps())),
+      ),
+  );
+
+  server.registerTool(
+    "init_product",
+    {
+      title: "Initialise a local Kstonebase product binding",
+      description:
+        "Plan the local files (.kstonebase.json, optionally CLAUDE.md and AGENTS.md) that bind this directory to a Kstonebase Product (and its parent Workspace when known). Returns a structured file plan the agent applies with its own file-write tool. When no productId is supplied and the directory is not already bound, returns status=\"needs_selection\" with the candidate products — present them to the user, then call again with the chosen productId (optionally pass a workspaceId to scope the candidate list). Idempotent — pass `existingFiles` and `existingKstonebaseJson` so the response carries action=\"skip\" for files already in place, or action=\"conflict\" for a .kstonebase.json that binds different ids. Pass `force=true` to overwrite.",
+      annotations: ADDITIVE_WRITE_TOOL,
+      inputSchema: {
+        productId: z.string().optional(),
+        workspaceId: z.string().optional(),
+        targetDir: z.string().optional(),
+        includeAgentDocs: z.boolean().optional(),
+        force: z.boolean().optional(),
+        existingFiles: z.array(z.string()).optional(),
+        existingKstonebaseJson: z.string().optional(),
+      },
+    },
+    async (args) =>
+      runTool(
+        "init_product",
+        { productId: args.productId, workspaceId: args.workspaceId },
+        async () => ok(await runInitProduct(args, setupDeps())),
       ),
   );
 

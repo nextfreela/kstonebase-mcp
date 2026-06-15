@@ -336,6 +336,17 @@ All tools take ids as strings. Bound Workspace/Product ids are inferred from `.k
 
 > **Note** — the agent never calls "mark reviewed". Approval stays a human action in the Kstonebase UI. The MCP can only nudge a draft to `Needs Review`.
 
+### Setup tools
+
+These plan the local binding files (`.kstonebase.json`, `CLAUDE.md`, `AGENTS.md`). They never write to disk themselves — they return a structured file plan the agent applies with its own file-write tool, and existing files come back as `action="skip"` so the tools are safe to re-run.
+
+| Tool             | Purpose                                                                                                                                                                                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `init_workspace` | Bind this directory to a Workspace. Pass `workspaceId`, or omit it to get `status="needs_selection"` with the candidate Workspaces — present them to the user, then call again with the chosen id.                                                                        |
+| `init_product`   | Bind this directory to a Product (and its parent Workspace when known). Pass `productId`, or omit it to get `status="needs_selection"` with the candidate Products (optionally pass a `workspaceId` to scope the list), then call again with the chosen id.               |
+
+Pass `existingFiles` + `existingKstonebaseJson` (the agent reads them) so the plan can mark files `skip` / `conflict`; `force=true` overwrites. `includeAgentDocs=false` plans only `.kstonebase.json`.
+
 ## 🛟 Tips
 
 ### Add a rule
